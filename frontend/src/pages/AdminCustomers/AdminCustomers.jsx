@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import CustomerForm from '../../components/CustomerForm/CustomerForm'
 import Modal from '../../components/Modal/Modal'
+import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import './AdminCustomers.css'
 
 export default function AdminCustomers() {
@@ -69,14 +70,14 @@ export default function AdminCustomers() {
             className="btn-primary-add"
             onClick={() => setShowCreateModal(true)}
           >
-            <span>+</span> Add Customer
+            <i className="fa-solid fa-plus" aria-hidden="true" /> Add Customer
           </button>
         </div>
       </div>
 
       {error && (
         <div className="alert-error">
-          <span>⚠️</span> {error}
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
         </div>
       )}
 
@@ -89,7 +90,7 @@ export default function AdminCustomers() {
             </div>
           ) : filteredCustomers.length === 0 ? (
             <div className="task-empty-state">
-              <div className="task-empty-icon">👥</div>
+              <div className="task-empty-icon"><i className="fa-solid fa-address-book" aria-hidden="true" /></div>
               <div className="task-empty-title">No customers found</div>
               <p className="task-empty-desc">
                 {search ? 'No clients match your search query.' : 'Click "+ Add Customer" to add your first customer.'}
@@ -134,6 +135,56 @@ export default function AdminCustomers() {
                 ))}
               </tbody>
             </table>
+          )}
+
+          {!loading && filteredCustomers.length > 0 && (
+            <MobileCardList
+              items={filteredCustomers}
+              detailTitle={(c) => c.name}
+              detailSubtitle={(c) => c.company || 'No company on file'}
+              renderCard={(c) => (
+                <>
+                  <span className="mdc-title">{c.name}</span>
+                  <span className="mdc-subtitle">{c.company || 'No company'}</span>
+                </>
+              )}
+              renderDetail={(c, close) => (
+                <div className="detail-list">
+                  <div className="detail-row">
+                    <span className="detail-row-label">Company</span>
+                    <span className="detail-row-value">{c.company || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-row-label">Phone</span>
+                    <span className="detail-row-value">{c.phone || '—'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-row-label">Email</span>
+                    <span className="detail-row-value">
+                      {c.email ? (
+                        <a href={`mailto:${c.email}`} style={{ color: 'var(--primary)', fontWeight: 500 }}>
+                          {c.email}
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </div>
+                  <div className="detail-actions">
+                    <button
+                      type="button"
+                      className="btn-table-action"
+                      onClick={() => {
+                        close()
+                        setEditingCustomer(c)
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            />
           )}
         </div>
       </div>

@@ -47,12 +47,12 @@ export default function ChangePassword() {
       <form className="task-form-modern" onSubmit={handleSubmit}>
         {error && (
           <div className="alert-error">
-            <span>⚠️</span> {error}
+            <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
           </div>
         )}
         {success && (
           <div className="badge active" style={{ padding: '8px 12px', borderRadius: 'var(--radius-sm)' }}>
-            <span>✔</span> {success}
+            <i className="fa-solid fa-check" aria-hidden="true" /> {success}
           </div>
         )}
 

@@ -27,12 +27,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::get('/tasks/mine', [TaskController::class, 'mine']);
     Route::get('/tasks/unassigned', [TaskController::class, 'unassigned']);
+    Route::get('/tasks/reported', [TaskController::class, 'reported']);
     Route::post('/tasks', [TaskController::class, 'store']);
     Route::patch('/tasks/{task}', [TaskController::class, 'update']);
     Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
     Route::post('/tasks/{task}/pause', [TaskController::class, 'pause']);
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete']);
-    Route::post('/tasks/{task}/pick-up', [TaskController::class, 'pickUp']);
 
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
+    Route::get('/staff/dashboard-summary', [DashboardController::class, 'staffSummary']);
 });

@@ -46,7 +46,7 @@ export default function TaskList({ refreshSignal, onChange }) {
 
       {error && (
         <div className="alert-error">
-          <span>⚠️</span> {error}
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
         </div>
       )}
 
@@ -57,10 +57,10 @@ export default function TaskList({ refreshSignal, onChange }) {
         </div>
       ) : tasks.length === 0 ? (
         <div className="task-empty-state">
-          <div className="task-empty-icon">☕</div>
+          <div className="task-empty-icon"><i className="fa-solid fa-mug-hot" aria-hidden="true" /></div>
           <div className="task-empty-title">All caught up!</div>
           <p className="task-empty-desc">
-            You don't have any pending tasks assigned to you. Pick up tasks from the unassigned queue below.
+            You don't have any pending tasks assigned to you.
           </p>
         </div>
       ) : (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import './LoginScreen.css'
 
 export default function LoginScreen() {
@@ -9,6 +10,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const { login } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -33,9 +35,21 @@ export default function LoginScreen() {
 
   return (
     <div className="login-page-wrapper">
+      <button
+        type="button"
+        className="login-theme-btn"
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      >
+        <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`} aria-hidden="true" />
+      </button>
+
       <div className="login-card">
         <div className="login-brand">
-          <div className="login-logo">✓</div>
+          <div className="login-logo">
+            <i className="fa-solid fa-diagram-project" aria-hidden="true" />
+          </div>
           <h1 className="login-title">Welcome to TaskFlow</h1>
           <p className="login-subtitle">Task & Employee Management System</p>
         </div>
@@ -43,7 +57,7 @@ export default function LoginScreen() {
         <form className="task-form-modern" onSubmit={handleSubmit}>
           {error && (
             <div className="alert-error">
-              <span>⚠️</span> {error}
+              <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
             </div>
           )}
 

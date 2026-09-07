@@ -29,6 +29,7 @@ class UpdateTaskRequest extends FormRequest
             'assigned_staff_id' => ['nullable', 'exists:users,id'],
             'priority' => ['sometimes', 'in:'.implode(',', Task::PRIORITIES)],
             'status' => ['sometimes', 'in:'.implode(',', Task::STATUSES)],
+            'estimated_minutes' => ['nullable', 'integer', 'min:0'],
             'due_date' => ['nullable', 'date'],
             'is_repeating' => ['boolean'],
             'repeat_frequency' => ['nullable', 'required_if:is_repeating,true', 'in:'.implode(',', Task::REPEAT_FREQUENCIES)],

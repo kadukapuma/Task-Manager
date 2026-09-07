@@ -50,14 +50,41 @@ class TaskController extends Controller
         return $this->ok($tasks);
     }
 
+    /**
+     * Tasks the current user reported themselves, regardless of who (if
+     * anyone) it's since been assigned to -- lets a staff member track a
+     * task they added even before an admin picks it up.
+     */
+    public function reported(Request $request)
+    {
+        $tasks = $this->baseQuery()
+            ->where('created_by', $request->user()->id)
+            ->latest()
+            ->get();
+
+        return $this->ok($tasks);
+    }
+
     public function store(StoreTaskRequest $request)
     {
         $data = $request->validated();
         $data['customer_id'] = $this->resolveCustomerId($data);
+        $data['created_by'] = $request->user()->id;
 
-        $task = Task::create($data)->fresh(['customer', 'assignedStaff']);
+        // Non-admins can only report a task exists (title, description,
+        // customer, priority). Assignment, scheduling, estimation, and
+        // recurrence are set later by an admin when they triage/assign it.
+        if (! $request->user()->isAdmin()) {
+            $data['assigned_staff_id'] = null;
+            $data['estimated_minutes'] = null;
+            $data['due_date'] = null;
+            $data['is_repeating'] = false;
+            $data['repeat_frequency'] = null;
+        }
 
-        return $this->ok($task, 'Task created.', 201);
+        $task = Task::create($data);
+
+        return $this->ok($this->freshTask($task), 'Task created.', 201);
     }
 
     public function update(UpdateTaskRequest $request, Task $task)
@@ -70,7 +97,7 @@ class TaskController extends Controller
 
         $task->update($data);
 
-        return $this->ok($task->load('customer', 'assignedStaff'), 'Task updated.');
+        return $this->ok($this->freshTask($task), 'Task updated.');
     }
 
     public function start(Request $request, Task $task)
@@ -93,7 +120,7 @@ class TaskController extends Controller
 
         $task->update(['status' => 'In Progress']);
 
-        return $this->ok($task->load('customer', 'assignedStaff'), 'Task started.');
+        return $this->ok($this->freshTask($task), 'Task started.');
     }
 
     public function pause(Request $request, Task $task)
@@ -107,7 +134,7 @@ class TaskController extends Controller
         $this->closeOpenTimeLog($task);
         $task->update(['status' => 'Paused']);
 
-        return $this->ok($task->load('customer', 'assignedStaff'), 'Task paused.');
+        return $this->ok($this->freshTask($task), 'Task paused.');
     }
 
     public function complete(Request $request, Task $task)
@@ -117,23 +144,25 @@ class TaskController extends Controller
         $this->closeOpenTimeLog($task);
         $task->update(['status' => 'Done', 'completed_at' => now()]);
 
-        return $this->ok($task->load('customer', 'assignedStaff'), 'Task marked done.');
+        return $this->ok($this->freshTask($task), 'Task marked done.');
     }
 
-    public function pickUp(Request $request, Task $task)
+    /**
+     * Reload a task from the database with its relations and the
+     * total time logged against it, so every response carries the
+     * same shape the frontend expects (including freshly-defaulted
+     * DB columns that an in-memory create()/update() call won't have).
+     */
+    private function freshTask(Task $task): Task
     {
-        if ($task->assigned_staff_id !== null) {
-            return $this->ok(null, 'Task has already been picked up.', Response::HTTP_CONFLICT);
-        }
-
-        $task->update(['assigned_staff_id' => $request->user()->id]);
-
-        return $this->ok($task->load('customer', 'assignedStaff'), 'Task picked up.');
+        return $task->fresh(['customer', 'assignedStaff'])
+            ->loadSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 
     private function baseQuery()
     {
-        return Task::with('customer', 'assignedStaff');
+        return Task::with('customer', 'assignedStaff')
+            ->withSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 
     /**

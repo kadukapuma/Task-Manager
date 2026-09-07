@@ -58,14 +58,29 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg-surface-hover);
+  background-color: var(--bg-surface-hover);
   color: var(--text-primary);
   font-size: 0.8125rem;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  padding-right: 2.25rem;
 }
 
 .filter-item select:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .filter-item select {
+    font-size: 16px;
+    min-height: 44px;
+  }
 }
 
 .tasks-table-card {

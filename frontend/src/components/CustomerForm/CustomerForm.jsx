@@ -40,7 +40,7 @@ export default function CustomerForm({
     <form className="customer-form-modern" onSubmit={handleSubmit}>
       {error && (
         <div className="alert-error">
-          <span>⚠️</span> {error}
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
         </div>
       )}
 

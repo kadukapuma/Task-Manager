@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
+import { useAuth } from '../../context/AuthContext'
+import StaffPicker from '../StaffPicker/StaffPicker'
 import './TaskForm.css'
 
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
@@ -14,6 +16,7 @@ function initialState(task) {
     assigned_staff_id: task?.assigned_staff_id ?? '',
     priority: task?.priority ?? 'Normal',
     status: task?.status ?? 'Pending',
+    estimated_hours: task?.estimated_minutes ? (task.estimated_minutes / 60).toString() : '',
     due_date: task?.due_date ? task.due_date.slice(0, 10) : '',
     is_repeating: task?.is_repeating ?? false,
     repeat_frequency: task?.repeat_frequency ?? '',
@@ -21,10 +24,13 @@ function initialState(task) {
 }
 
 export default function TaskForm({ task = null, onSaved, onCancel }) {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
   const isEdit = Boolean(task)
   const [form, setForm] = useState(initialState(task))
   const [customers, setCustomers] = useState([])
   const [staff, setStaff] = useState([])
+  const [staffLoading, setStaffLoading] = useState(true)
   const [creatingCustomer, setCreatingCustomer] = useState(false)
   const [newCustomer, setNewCustomer] = useState({ name: '', company: '', phone: '', email: '' })
   const [error, setError] = useState('')
@@ -32,8 +38,17 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
   useEffect(() => {
     api.get('/customers').then(({ data }) => setCustomers(data.data)).catch(() => {})
-    api.get('/users').then(({ data }) => setStaff(data.filter((u) => u.role === 'staff'))).catch(() => {})
-  }, [])
+    // /users is admin-only -- staff creating their own task never assign anyone.
+    if (isAdmin) {
+      api
+        .get('/users')
+        .then(({ data }) => setStaff(data.filter((u) => u.role === 'staff')))
+        .catch(() => {})
+        .finally(() => setStaffLoading(false))
+    } else {
+      setStaffLoading(false)
+    }
+  }, [isAdmin])
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -61,6 +76,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
       description: form.description || null,
       assigned_staff_id: form.assigned_staff_id || null,
       priority: form.priority,
+      estimated_minutes: form.estimated_hours ? Math.round(parseFloat(form.estimated_hours) * 60) : null,
       due_date: form.due_date || null,
       is_repeating: form.is_repeating,
       repeat_frequency: form.is_repeating ? form.repeat_frequency : null,
@@ -93,7 +109,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
     <form className="task-form-modern" onSubmit={handleSubmit}>
       {error && (
         <div className="alert-error">
-          <span>⚠️</span> {error}
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {error}
         </div>
       )}
 
@@ -187,21 +203,16 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
       </div>
 
       <div className="form-grid-2col">
-        <div className="form-field">
-          <label htmlFor="task_staff">Assigned Staff</label>
-          <select
-            id="task_staff"
+        {isAdmin && (
+          <StaffPicker
+            staff={staff}
+            loading={staffLoading}
             value={form.assigned_staff_id}
-            onChange={(e) => set('assigned_staff_id', e.target.value)}
-          >
-            <option value="">Unassigned (Queue)</option>
-            {staff.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            onChange={(id) => set('assigned_staff_id', id)}
+            label="Assigned Staff"
+            allowUnassigned
+          />
+        )}
 
         <div className="form-field">
           <label htmlFor="task_priority">Priority</label>
@@ -212,67 +223,91 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
           >
             {PRIORITIES.map((p) => (
               <option key={p} value={p}>
-                {p === 'Fire' ? '🔥 Fire (Urgent & Critical)' : p === 'Urgent' ? '⚡ Urgent' : '📌 Normal'}
+                {p === 'Fire' ? 'Fire (Urgent & Critical)' : p}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      <div className="form-grid-2col">
-        {isEdit && (
-          <div className="form-field">
-            <label htmlFor="task_status">Status</label>
-            <select
-              id="task_status"
-              value={form.status}
-              onChange={(e) => set('status', e.target.value)}
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+      {!isAdmin && !isEdit && (
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+          This task goes into the unassigned queue. An admin will assign it, set the schedule,
+          time estimate, and recurrence when they pick it up.
+        </p>
+      )}
+
+      {isAdmin && (
+        <>
+          <div className="form-grid-2col">
+            {isEdit && (
+              <div className="form-field">
+                <label htmlFor="task_status">Status</label>
+                <select
+                  id="task_status"
+                  value={form.status}
+                  onChange={(e) => set('status', e.target.value)}
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="form-field">
+              <label htmlFor="task_est_hours">Estimated Time (Hours)</label>
+              <input
+                id="task_est_hours"
+                type="number"
+                step="0.25"
+                min="0"
+                placeholder="e.g. 1 or 1.5"
+                value={form.estimated_hours}
+                onChange={(e) => set('estimated_hours', e.target.value)}
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="task_due_date">Due Date</label>
+              <input
+                id="task_due_date"
+                type="date"
+                value={form.due_date}
+                onChange={(e) => set('due_date', e.target.value)}
+              />
+            </div>
           </div>
-        )}
 
-        <div className="form-field">
-          <label htmlFor="task_due_date">Due Date</label>
-          <input
-            id="task_due_date"
-            type="date"
-            value={form.due_date}
-            onChange={(e) => set('due_date', e.target.value)}
-          />
-        </div>
-      </div>
+          <label className="form-toggle-row">
+            <input
+              type="checkbox"
+              checked={form.is_repeating}
+              onChange={(e) => set('is_repeating', e.target.checked)}
+            />
+            <span className="form-toggle-label">Recurring Task</span>
+          </label>
 
-      <label className="form-toggle-row">
-        <input
-          type="checkbox"
-          checked={form.is_repeating}
-          onChange={(e) => set('is_repeating', e.target.checked)}
-        />
-        <span className="form-toggle-label">Recurring Task</span>
-      </label>
-
-      {form.is_repeating && (
-        <div className="form-field">
-          <label htmlFor="task_freq">Repeat Frequency</label>
-          <select
-            id="task_freq"
-            value={form.repeat_frequency}
-            onChange={(e) => set('repeat_frequency', e.target.value)}
-          >
-            <option value="">Select frequency…</option>
-            {FREQUENCIES.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
-        </div>
+          {form.is_repeating && (
+            <div className="form-field">
+              <label htmlFor="task_freq">Repeat Frequency</label>
+              <select
+                id="task_freq"
+                value={form.repeat_frequency}
+                onChange={(e) => set('repeat_frequency', e.target.value)}
+              >
+                <option value="">Select frequency…</option>
+                {FREQUENCIES.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </>
       )}
 
       <div className="modal-form-actions">

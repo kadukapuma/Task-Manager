@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import Modal from '../Modal/Modal'
+import MobileCardList from '../MobileCardList/MobileCardList'
 import './UserManagement.css'
+
+function initialsOf(name) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
 
 const emptyForm = { name: '', username: '', password: '', role: 'staff' }
 
@@ -106,13 +116,13 @@ export default function UserManagement() {
             setShowAddModal(true)
           }}
         >
-          <span>+</span> Add New User
+          <i className="fa-solid fa-plus" aria-hidden="true" /> Add New User
         </button>
       </div>
 
       {listError && (
         <div className="alert-error">
-          <span>⚠️</span> {listError}
+          <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {listError}
         </div>
       )}
 
@@ -135,12 +145,7 @@ export default function UserManagement() {
             </thead>
             <tbody>
               {users.map((u) => {
-                const initials = u.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)
+                const initials = initialsOf(u.name)
                 return (
                   <tr key={u.id}>
                     <td>
@@ -194,6 +199,73 @@ export default function UserManagement() {
             </tbody>
           </table>
         )}
+
+        {!loading && (
+          <MobileCardList
+            items={users}
+            detailTitle={(u) => u.name}
+            detailSubtitle={(u) => `@${u.username}`}
+            renderCard={(u) => (
+              <>
+                <span className="mdc-title">{u.name}</span>
+                <span className="mdc-subtitle">@{u.username}</span>
+                <div className="mdc-badges">
+                  <span className={`badge ${u.role === 'admin' ? 'role-admin' : 'role-staff'}`}>{u.role}</span>
+                  <span className={`badge ${u.active ? 'active' : 'inactive'}`}>
+                    {u.active ? 'Active' : 'Deactivated'}
+                  </span>
+                </div>
+              </>
+            )}
+            renderDetail={(u, close) => (
+              <div className="detail-list">
+                <div className="detail-row">
+                  <span className="detail-row-label">Role</span>
+                  <span className="detail-row-value">
+                    <span className={`badge ${u.role === 'admin' ? 'role-admin' : 'role-staff'}`}>{u.role}</span>
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-row-label">Account Status</span>
+                  <span className="detail-row-value">
+                    <span className={`badge ${u.active ? 'active' : 'inactive'}`}>
+                      {u.active ? 'Active' : 'Deactivated'}
+                    </span>
+                  </span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-row-label">Created</span>
+                  <span className="detail-row-value">{new Date(u.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="detail-actions">
+                  <button
+                    type="button"
+                    className="btn-table-action"
+                    disabled={pendingToggleId === u.id}
+                    onClick={async () => {
+                      await handleToggleActive(u)
+                      close()
+                    }}
+                  >
+                    {u.active ? 'Deactivate' : 'Activate'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-table-action"
+                    onClick={() => {
+                      close()
+                      setResetTargetUser(u)
+                      setResetPassword('')
+                      setResetError('')
+                    }}
+                  >
+                    Reset Password
+                  </button>
+                </div>
+              </div>
+            )}
+          />
+        )}
       </div>
 
       {/* Popup Window: Add New User Modal */}
@@ -207,7 +279,7 @@ export default function UserManagement() {
         <form className="task-form-modern" onSubmit={handleAddUser}>
           {formError && (
             <div className="alert-error">
-              <span>⚠️</span> {formError}
+              <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {formError}
             </div>
           )}
 
@@ -286,7 +358,7 @@ export default function UserManagement() {
         <form className="task-form-modern" onSubmit={handleResetPassword}>
           {resetError && (
             <div className="alert-error">
-              <span>⚠️</span> {resetError}
+              <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {resetError}
             </div>
           )}
 

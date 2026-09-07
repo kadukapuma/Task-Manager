@@ -36,7 +36,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, size = 'md', c
             {subtitle && <p className="modal-subtitle">{subtitle}</p>}
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            &times;
+            <i className="fa-solid fa-xmark" aria-hidden="true" />
           </button>
         </div>
         <div className="modal-body">{children}</div>

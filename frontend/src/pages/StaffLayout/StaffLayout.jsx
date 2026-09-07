@@ -1,55 +1,34 @@
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import SideNavBar from '../../components/SideNavBar/SideNavBar'
 import HeaderBar from '../../components/HeaderBar/HeaderBar'
 import './StaffLayout.css'
 
+const links = [
+  { to: '/staff', label: 'Staff Dashboard', end: true, icon: 'fa-gauge-high' },
+  { to: '/staff/tasks', label: 'My Tasks & Queue', icon: 'fa-list-check' },
+  { to: '/staff/change-password', label: 'Change Password', icon: 'fa-key' },
+]
+
+const titleMap = {
+  '/staff': { title: 'Staff Dashboard', subtitle: 'Personal work metrics, logged hours, and task performance' },
+  '/staff/tasks': { title: 'Staff Workspace', subtitle: 'Manage your active work and add new tasks for an admin to assign' },
+  '/staff/change-password': { title: 'Security Settings', subtitle: 'Update your account password' },
+}
+
 export default function StaffLayout() {
   const location = useLocation()
+  const [navOpen, setNavOpen] = useState(false)
 
-  const links = [
-    {
-      to: '/staff',
-      label: 'My Tasks & Queue',
-      end: true,
-      icon: (
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-          />
-        </svg>
-      ),
-    },
-    {
-      to: '/staff/change-password',
-      label: 'Change Password',
-      icon: (
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-          />
-        </svg>
-      ),
-    },
-  ]
-
-  const titleMap = {
-    '/staff': { title: 'Staff Workspace', subtitle: 'Manage active work items and pick up unassigned tasks' },
-    '/staff/change-password': { title: 'Security Settings', subtitle: 'Update your account password' },
-  }
+  useEffect(() => setNavOpen(false), [location.pathname])
 
   const currentMeta = titleMap[location.pathname] || { title: 'Staff Workspace', subtitle: '' }
 
   return (
     <div className="staff-layout-wrapper">
-      <SideNavBar links={links} title="Staff Navigation" />
+      <SideNavBar links={links} title="Staff Navigation" isOpen={navOpen} onClose={() => setNavOpen(false)} />
       <div className="staff-main-content">
-        <HeaderBar title={currentMeta.title} subtitle={currentMeta.subtitle} />
+        <HeaderBar title={currentMeta.title} subtitle={currentMeta.subtitle} onMenuClick={() => setNavOpen(true)} />
         <main className="staff-page-body">
           <Outlet />
         </main>
@@ -57,4 +36,3 @@ export default function StaffLayout() {
     </div>
   )
 }
-

@@ -1,15 +1,41 @@
 .sidenav-container {
-  width: 260px;
-  min-width: 260px;
+  width: var(--sidenav-width);
+  min-width: var(--sidenav-width);
+  /* 100vh on mobile browsers includes space hidden behind the collapsible
+     address/tool bar, which can push the footer (logout button) off-screen.
+     100dvh tracks the actually-visible viewport; vh stays as a fallback. */
   height: 100vh;
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border);
+  height: 100dvh;
+  background: var(--shell-bg);
+  border-right: 1px solid var(--shell-border);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
-  z-index: 50;
-  transition: var(--transition);
+  z-index: 60;
+  transition: transform 0.25s ease;
+}
+
+.sidenav-close-btn {
+  display: none;
+  background: transparent;
+  color: var(--shell-text-muted);
+  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.sidenav-close-btn:hover {
+  background: var(--shell-hover);
+  color: var(--shell-text);
+}
+
+.sidenav-backdrop {
+  display: none;
 }
 
 .sidenav-header {
@@ -17,39 +43,42 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--shell-border);
 }
 
 .sidenav-logo-icon {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary), #818cf8);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--shell-accent), #337418);
+  color: #0f0f0f;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.125rem;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(93, 214, 44, 0.35);
+  flex-shrink: 0;
 }
 
 .sidenav-brand-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .sidenav-brand-name {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--shell-text);
   line-height: 1.2;
 }
 
 .sidenav-brand-sub {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--shell-accent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -68,7 +97,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: var(--shell-text-muted);
   padding: 0.5rem 0.75rem 0.25rem;
   margin-top: 0.5rem;
 }
@@ -81,41 +110,70 @@
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--shell-text-muted);
   transition: var(--transition);
 }
 
-.sidenav-link svg {
+.sidenav-link i {
   width: 18px;
-  height: 18px;
-  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--shell-text-muted);
   transition: var(--transition);
   flex-shrink: 0;
 }
 
 .sidenav-link:hover {
-  background: var(--bg-surface-hover);
-  color: var(--text-primary);
+  background: var(--shell-hover);
+  color: var(--shell-text);
 }
 
-.sidenav-link:hover svg {
-  color: var(--primary);
+.sidenav-link:hover i {
+  color: var(--shell-accent);
 }
 
 .sidenav-link.active {
-  background: var(--primary-subtle);
-  color: var(--primary);
+  background: var(--shell-active-bg);
+  color: var(--shell-active-text);
   font-weight: 600;
 }
 
-.sidenav-link.active svg {
-  color: var(--primary);
+.sidenav-link.active i {
+  color: var(--shell-active-text);
 }
 
 .sidenav-footer {
   padding: 1rem 1.125rem;
-  border-top: 1px solid var(--border);
-  background: var(--bg-surface);
+  border-top: 1px solid var(--shell-border);
+  background: var(--shell-bg);
+}
+
+.sidenav-theme-btn {
+  /* Desktop shows the toggle in the header instead; this one is mobile-only. */
+  display: none;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.875rem;
+  background: var(--shell-hover);
+  border: 1px solid var(--shell-border);
+  border-radius: var(--radius-md);
+  color: var(--shell-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.sidenav-theme-btn i {
+  width: 16px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--shell-accent);
+}
+
+.sidenav-theme-btn:hover {
+  border-color: var(--shell-accent);
 }
 
 .sidenav-user-card {
@@ -136,9 +194,9 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background: var(--primary-subtle);
-  color: var(--primary);
-  border: 1px solid var(--border);
+  background: var(--shell-active-bg);
+  color: var(--shell-active-text);
+  border: 1px solid var(--shell-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,7 +214,7 @@
 .sidenav-user-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--shell-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -164,20 +222,21 @@
 
 .sidenav-user-role {
   font-size: 0.6875rem;
-  color: var(--text-muted);
+  color: var(--shell-text-muted);
   text-transform: capitalize;
 }
 
 .sidenav-logout-btn {
   background: transparent;
-  color: var(--text-muted);
-  padding: 6px;
+  color: var(--shell-text-muted);
+  padding: 6px 8px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: var(--transition);
+  font-size: 1rem;
 }
 
 .sidenav-logout-btn:hover {
@@ -185,8 +244,41 @@
   color: var(--fire);
 }
 
-.sidenav-logout-btn svg {
-  width: 18px;
-  height: 18px;
-}
+/* ---- Mobile: off-canvas drawer ---- */
+@media (max-width: 900px) {
+  .sidenav-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
 
+  .sidenav-container.open {
+    transform: translateX(0);
+  }
+
+  .sidenav-close-btn {
+    display: flex;
+  }
+
+  .sidenav-theme-btn {
+    display: flex;
+  }
+
+  .sidenav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .sidenav-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

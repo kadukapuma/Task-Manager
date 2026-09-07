@@ -29,6 +29,6 @@
 .customer-form-modern input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 0 0 3px rgba(93, 214, 44, 0.15);
 }
 

@@ -1,20 +1,21 @@
-import { formatDate, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
 import './TaskCard.css'
+
+const PRIORITY_ICON = {
+  Fire: 'fa-fire',
+  Urgent: 'fa-bolt',
+  Normal: 'fa-thumbtack',
+}
 
 export default function TaskCard({
   task,
-  unassigned = false,
   busy = false,
+  readOnly = false,
   onStart,
   onPause,
   onComplete,
-  onPickUp,
 }) {
-  const priorityEmoji = {
-    Fire: '🔥',
-    Urgent: '⚡',
-    Normal: '📌',
-  }[task.priority] || '📌'
+  const priorityIcon = PRIORITY_ICON[task.priority] || 'fa-thumbtack'
 
   return (
     <div className={`task-card-modern ${priorityClass(task.priority)}`}>
@@ -22,12 +23,12 @@ export default function TaskCard({
         <div className="task-card-title-row">
           <span className="task-card-title">{task.title}</span>
           <span className={`badge ${priorityClass(task.priority)}`}>
-            <span>{priorityEmoji}</span> {task.priority}
+            <i className={`fa-solid ${priorityIcon}`} aria-hidden="true" /> {task.priority}
           </span>
           <span className={`badge ${statusClass(task.status)}`}>{task.status}</span>
           {task.is_repeating && (
             <span className="badge" style={{ background: 'var(--primary-subtle)', color: 'var(--primary)' }}>
-              🔄 {task.repeat_frequency || 'Repeating'}
+              <i className="fa-solid fa-rotate" aria-hidden="true" /> {task.repeat_frequency || 'Repeating'}
             </span>
           )}
         </div>
@@ -37,40 +38,45 @@ export default function TaskCard({
         <div className="task-card-meta">
           {task.customer && (
             <span className="task-meta-item">
-              <span>👤</span> {task.customer.name}
+              <i className="fa-solid fa-user" aria-hidden="true" /> {task.customer.name}
               {task.customer.company && ` (${task.customer.company})`}
             </span>
           )}
+          {task.estimated_minutes > 0 && (
+            <span className="task-meta-item">
+              <i className="fa-regular fa-clock" aria-hidden="true" /> Est: {formatMinutes(task.estimated_minutes)}
+            </span>
+          )}
+          {task.total_logged_secs > 0 && (
+            <span className="task-meta-item">
+              <i className="fa-solid fa-stopwatch" aria-hidden="true" /> Actual: {formatDuration(task.total_logged_secs)}
+            </span>
+          )}
           <span className="task-meta-item">
-            <span>📅</span> Due: {formatDate(task.due_date)}
+            <i className="fa-regular fa-calendar" aria-hidden="true" /> Due: {formatDate(task.due_date)}
           </span>
+          {readOnly && (
+            <span className="task-meta-item">
+              <i className="fa-solid fa-user-check" aria-hidden="true" />{' '}
+              {task.assigned_staff ? `Assigned to ${task.assigned_staff.name}` : 'Waiting for an admin to assign'}
+            </span>
+          )}
         </div>
       </div>
 
       <div className="task-card-actions">
-        {unassigned && (
-          <button
-            type="button"
-            className="btn-action btn-pickup"
-            disabled={busy}
-            onClick={() => onPickUp(task)}
-          >
-            <span>📥</span> Pick up
-          </button>
-        )}
-
-        {!unassigned && (task.status === 'Pending' || task.status === 'Paused') && (
+        {!readOnly && (task.status === 'Pending' || task.status === 'Paused') && (
           <button
             type="button"
             className="btn-action btn-start"
             disabled={busy}
             onClick={() => onStart(task)}
           >
-            <span>▶</span> Start
+            <i className="fa-solid fa-play" aria-hidden="true" /> Start
           </button>
         )}
 
-        {!unassigned && task.status === 'In Progress' && (
+        {!readOnly && task.status === 'In Progress' && (
           <>
             <button
               type="button"
@@ -78,7 +84,7 @@ export default function TaskCard({
               disabled={busy}
               onClick={() => onPause(task)}
             >
-              <span>⏸</span> Pause
+              <i className="fa-solid fa-pause" aria-hidden="true" /> Pause
             </button>
             <button
               type="button"
@@ -86,7 +92,7 @@ export default function TaskCard({
               disabled={busy}
               onClick={() => onComplete(task)}
             >
-              <span>✔</span> Mark Done
+              <i className="fa-solid fa-check" aria-hidden="true" /> Mark Done
             </button>
           </>
         )}
@@ -94,4 +100,3 @@ export default function TaskCard({
     </div>
   )
 }
-

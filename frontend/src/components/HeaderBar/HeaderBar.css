@@ -1,5 +1,5 @@
 .headerbar-container {
-  height: 64px;
+  min-height: var(--headerbar-height);
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -9,11 +9,34 @@
   position: sticky;
   top: 0;
   z-index: 40;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .headerbar-left {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 0;
+  min-width: 0;
+}
+
+.headerbar-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.headerbar-titles {
+  min-width: 0;
 }
 
 .headerbar-title {
@@ -32,6 +55,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 0.5rem 0;
 }
 
 .headerbar-date-pill {
@@ -44,5 +68,54 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
+.headerbar-theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.headerbar-theme-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .headerbar-menu-btn {
+    display: flex;
+  }
+
+  /* The toggle lives in the sidenav drawer on mobile instead. */
+  .headerbar-theme-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerbar-container {
+    padding: 0 1rem;
+  }
+
+  .headerbar-title {
+    font-size: 1.0625rem;
+  }
+
+  .headerbar-subtitle {
+    display: none;
+  }
+
+  .headerbar-date-pill span {
+    display: none;
+  }
+}

@@ -4,3 +4,8 @@
   gap: 1.5rem;
 }
 
+.staff-home-header {
+  display: flex;
+  justify-content: flex-end;
+}
+

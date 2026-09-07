@@ -36,7 +36,7 @@
 
 .task-card-modern:hover {
   box-shadow: var(--shadow-md);
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: rgba(93, 214, 44, 0.3);
   transform: translateY(-1px);
 }
 
@@ -133,16 +133,7 @@
 }
 
 .btn-action.btn-complete:hover:not(:disabled) {
-  background: #059669;
-}
-
-.btn-action.btn-pickup {
-  background: var(--primary);
-  color: #ffffff;
-}
-
-.btn-action.btn-pickup:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: var(--success-hover);
 }
 
 .btn-action:disabled {

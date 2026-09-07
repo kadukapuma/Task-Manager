@@ -19,8 +19,10 @@ class Task extends Model
         'description',
         'customer_id',
         'assigned_staff_id',
+        'created_by',
         'priority',
         'status',
+        'estimated_minutes',
         'is_repeating',
         'repeat_frequency',
         'due_date',
@@ -30,6 +32,7 @@ class Task extends Model
     protected function casts(): array
     {
         return [
+            'estimated_minutes' => 'integer',
             'is_repeating' => 'boolean',
             'due_date' => 'date',
             'completed_at' => 'datetime',
@@ -44,6 +47,11 @@ class Task extends Model
     public function assignedStaff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function timeLogs(): HasMany

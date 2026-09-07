@@ -4,13 +4,14 @@ namespace App\Http\Requests;
 
 use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
 
 class StoreTaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('admin');
+        // Any authenticated user can create a task; only admins may set
+        // assigned_staff_id (enforced in TaskController::store()).
+        return true;
     }
 
     public function rules(): array
@@ -28,6 +29,7 @@ class StoreTaskRequest extends FormRequest
 
             'assigned_staff_id' => ['nullable', 'exists:users,id'],
             'priority' => ['nullable', 'in:'.implode(',', Task::PRIORITIES)],
+            'estimated_minutes' => ['nullable', 'integer', 'min:0'],
             'due_date' => ['nullable', 'date'],
             'is_repeating' => ['boolean'],
             'repeat_frequency' => ['nullable', 'required_if:is_repeating,true', 'in:'.implode(',', Task::REPEAT_FREQUENCIES)],
