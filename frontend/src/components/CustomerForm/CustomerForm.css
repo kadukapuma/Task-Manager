@@ -1,0 +1,34 @@
+.customer-form-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+}
+
+.customer-form-modern .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customer-form-modern label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.customer-form-modern input {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+
+.customer-form-modern input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+

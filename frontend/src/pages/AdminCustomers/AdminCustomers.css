@@ -1,0 +1,45 @@
+.admin-customers-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.customers-top-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.customers-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customers-title-group h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.customer-search-input {
+  max-width: 280px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+}
+
+.customer-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+

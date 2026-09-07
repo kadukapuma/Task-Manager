@@ -1,0 +1,48 @@
+.headerbar-container {
+  height: 64px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.headerbar-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.headerbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.headerbar-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.headerbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerbar-date-pill {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface-hover);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
