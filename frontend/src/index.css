@@ -279,6 +279,12 @@ img, svg {
   border: 1px solid rgba(5, 150, 105, 0.2);
 }
 
+.badge.status-undone {
+  background: var(--danger-subtle);
+  color: var(--danger-text);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
 .badge.role-admin {
   background: var(--fire-subtle);
   color: var(--fire-text);
@@ -297,6 +303,11 @@ img, svg {
 .badge.inactive {
   background: var(--bg-surface-hover);
   color: var(--text-muted);
+}
+
+/* A table row that opens a detail view when clicked */
+.modern-table tr.clickable-row {
+  cursor: pointer;
 }
 
 /* Mobile: keep any modal/page from ever forcing horizontal scroll on the body */
@@ -332,7 +343,11 @@ img, svg {
     min-width: 130px;
   }
 
-  .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  .date-filters-group .btn-filter-apply,
+  .date-filters-bar .btn-filter-apply {
+    width: 100%;
+    margin-top: 4px;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
   }
 }

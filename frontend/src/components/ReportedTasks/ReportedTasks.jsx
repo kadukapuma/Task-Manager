@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import TaskCard from '../TaskCard/TaskCard'
+import Modal from '../Modal/Modal'
+import TaskDetailView from '../TaskDetailView/TaskDetailView'
 
 export default function ReportedTasks({ refreshSignal }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [viewingTask, setViewingTask] = useState(null)
 
   function load() {
     setLoading(true)
@@ -48,10 +51,20 @@ export default function ReportedTasks({ refreshSignal }) {
       ) : (
         <div className="task-stack">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} readOnly />
+            <TaskCard key={task.id} task={task} readOnly onView={setViewingTask} />
           ))}
         </div>
       )}
+
+      <Modal
+        isOpen={Boolean(viewingTask)}
+        onClose={() => setViewingTask(null)}
+        title={viewingTask?.title || ''}
+        subtitle={viewingTask ? `Task #${viewingTask.id}` : ''}
+        size="sm"
+      >
+        {viewingTask && <TaskDetailView task={viewingTask} />}
+      </Modal>
     </div>
   )
 }

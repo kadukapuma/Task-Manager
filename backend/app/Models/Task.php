@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
+    use SoftDeletes;
+
     public const PRIORITIES = ['Normal', 'Urgent', 'Fire'];
 
-    public const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done'];
+    public const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone'];
 
     public const REPEAT_FREQUENCIES = ['Daily', 'Weekly', 'Monthly'];
 
@@ -22,6 +26,7 @@ class Task extends Model
         'created_by',
         'priority',
         'status',
+        'cannot_complete_reason',
         'estimated_minutes',
         'is_repeating',
         'repeat_frequency',
@@ -57,5 +62,19 @@ class Task extends Model
     public function timeLogs(): HasMany
     {
         return $this->hasMany(TimeLog::class);
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
+
+    /**
+     * The currently-running time log (if any) -- lets the frontend compute
+     * a live elapsed timer for an in-progress task without polling.
+     */
+    public function activeTimeLog(): HasOne
+    {
+        return $this->hasOne(TimeLog::class)->whereNull('finish_time')->latestOfMany('start_time');
     }
 }

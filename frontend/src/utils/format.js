@@ -9,6 +9,16 @@ export function formatDuration(totalSecs) {
   return `${hours}h ${minutes}m`
 }
 
+/** Live-timer display: "12:34" under an hour, "1:02:34" once it passes one. */
+export function formatStopwatch(totalSecs) {
+  const secs = Math.max(0, Math.floor(totalSecs))
+  const hours = Math.floor(secs / 3600)
+  const minutes = Math.floor((secs % 3600) / 60)
+  const seconds = secs % 60
+  const pad = (n) => String(n).padStart(2, '0')
+  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`
+}
+
 export function formatMinutes(mins) {
   if (!mins || mins <= 0) return 'None'
   const hours = Math.floor(mins / 60)
@@ -39,4 +49,16 @@ export function priorityClass(priority) {
 
 export function statusClass(status) {
   return `status-${(status ?? 'pending').toLowerCase().replace(/\s+/g, '-')}`
+}
+
+const STATUS_COLORS = {
+  Pending: 'var(--text-muted)',
+  'In Progress': 'var(--info)',
+  Paused: 'var(--warning)',
+  Done: 'var(--success)',
+  Undone: 'var(--danger)',
+}
+
+export function statusColor(status) {
+  return STATUS_COLORS[status] ?? 'var(--text-muted)'
 }

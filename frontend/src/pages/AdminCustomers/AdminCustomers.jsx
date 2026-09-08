@@ -58,7 +58,7 @@ export default function AdminCustomers() {
           <span className="task-count-badge">{customers.length} total</span>
         </div>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div className="customers-actions-group">
           <input
             className="customer-search-input"
             placeholder="Search by name, company, email…"

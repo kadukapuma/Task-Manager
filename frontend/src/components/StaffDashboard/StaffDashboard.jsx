@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
-import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusColor } from '../../utils/format'
 import MobileCardList from '../MobileCardList/MobileCardList'
+import BarChart from '../charts/BarChart'
 import './StaffDashboard.css'
+
+function shortDayLabel(dateStr) {
+  return new Date(`${dateStr}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
 
 export default function StaffDashboard() {
   const [summary, setSummary] = useState(null)
@@ -125,39 +130,99 @@ export default function StaffDashboard() {
           {/* Top KPI Summary Grid */}
           <div className="kpi-grid">
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{formatDuration(summary.total_logged_secs)}</span>
-                <span className="kpi-label">Logged Working Hours</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini primary"><i className="fa-regular fa-clock" aria-hidden="true" /></span>
+                <span className="kpi-label">Logged Hours</span>
               </div>
-              <div className="kpi-icon-pill primary"><i className="fa-regular fa-clock" aria-hidden="true" /></div>
+              <span className="kpi-value">{formatDuration(summary.total_logged_secs)}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.tasks_completed_count}</span>
-                <span className="kpi-label">Tasks Completed</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini info"><i className="fa-regular fa-calendar-check" aria-hidden="true" /></span>
+                <span className="kpi-label">Days Worked</span>
               </div>
-              <div className="kpi-icon-pill success"><i className="fa-solid fa-check" aria-hidden="true" /></div>
+              <span className="kpi-value">{summary.days_worked}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.tasks_in_progress_count}</span>
-                <span className="kpi-label">In Progress Tasks</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini success"><i className="fa-solid fa-check" aria-hidden="true" /></span>
+                <span className="kpi-label">Finished</span>
               </div>
-              <div className="kpi-icon-pill warning"><i className="fa-solid fa-bolt" aria-hidden="true" /></div>
+              <span className="kpi-value">{summary.tasks_completed_count}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">
-                  {formatVariance(summary.total_estimated_minutes, summary.completed_actual_secs).text}
-                </span>
-                <span className="kpi-label">Work Efficiency vs Est.</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini warning"><i className="fa-solid fa-bolt" aria-hidden="true" /></span>
+                <span className="kpi-label">Working</span>
               </div>
-              <div className="kpi-icon-pill" style={{ background: 'var(--info-subtle)', color: 'var(--info-text)' }}>
-                <i className="fa-solid fa-chart-line" aria-hidden="true" />
+              <span className="kpi-value">{summary.tasks_in_progress_count}</span>
+            </div>
+
+            <div className="kpi-card">
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini neutral"><i className="fa-regular fa-hourglass-half" aria-hidden="true" /></span>
+                <span className="kpi-label">Pending</span>
               </div>
+              <span className="kpi-value">{summary.tasks_pending_count}</span>
+            </div>
+
+            <div className="kpi-card">
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini warning"><i className="fa-solid fa-pause" aria-hidden="true" /></span>
+                <span className="kpi-label">Paused</span>
+              </div>
+              <span className="kpi-value">{summary.tasks_paused_count}</span>
+            </div>
+
+            <div className="kpi-card">
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini danger"><i className="fa-solid fa-ban" aria-hidden="true" /></span>
+                <span className="kpi-label">Undone</span>
+              </div>
+              <span className="kpi-value">{summary.tasks_undone_count}</span>
+            </div>
+
+            <div className="kpi-card">
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini info"><i className="fa-solid fa-chart-line" aria-hidden="true" /></span>
+                <span className="kpi-label">Efficiency</span>
+              </div>
+              <span className="kpi-value kpi-value-sm">
+                {formatVariance(summary.total_estimated_minutes, summary.completed_actual_secs).text}
+              </span>
+            </div>
+          </div>
+
+          {/* Charts: daily hours trend + task status breakdown */}
+          <div className="charts-grid">
+            <div className="dashboard-card">
+              <div className="dashboard-card-header">
+                <h2 className="dashboard-card-title">Hours Worked Per Day</h2>
+              </div>
+              <BarChart
+                orientation="vertical"
+                height={160}
+                data={summary.daily_breakdown.map((d) => ({ label: shortDayLabel(d.work_date), value: d.secs }))}
+                formatValue={(v) => formatDuration(v)}
+                emptyMessage="No time logged in this window yet."
+              />
+            </div>
+
+            <div className="dashboard-card">
+              <div className="dashboard-card-header">
+                <h2 className="dashboard-card-title">My Task Status</h2>
+              </div>
+              <BarChart
+                orientation="horizontal"
+                data={summary.status_breakdown.map((s) => ({
+                  label: s.status,
+                  value: s.count,
+                  color: statusColor(s.status),
+                }))}
+              />
             </div>
           </div>
 
@@ -223,7 +288,7 @@ export default function StaffDashboard() {
                             <span
                               className="badge"
                               style={{
-                                background: v.status === 'good' ? 'var(--success-subtle)' : v.status === 'over' ? 'var(--warning-subtle)' : 'var(--bg-hover)',
+                                background: v.status === 'good' ? 'var(--success-subtle)' : v.status === 'over' ? 'var(--warning-subtle)' : 'var(--bg-surface-hover)',
                                 color: v.status === 'good' ? 'var(--success-text)' : v.status === 'over' ? 'var(--warning-text)' : 'var(--text-secondary)',
                               }}
                             >

@@ -3,10 +3,17 @@ import api, { apiErrorMessage } from '../../api/client'
 import TaskForm from '../../components/TaskForm/TaskForm'
 import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
+import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
 import './AdminTasks.css'
 
-const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done']
+const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
+const QUICK_STATUS_FILTERS = [
+  { label: 'Working', status: 'In Progress' },
+  { label: 'Paused', status: 'Paused' },
+  { label: 'Finished', status: 'Done' },
+]
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
 const PRIORITY_ICON = {
   Fire: 'fa-fire',
@@ -26,6 +33,9 @@ export default function AdminTasks() {
   // Modal states for popup creation and editing
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
+  const [viewingTask, setViewingTask] = useState(null)
+  const [deletingTask, setDeletingTask] = useState(null)
+  const [deleteBusy, setDeleteBusy] = useState(false)
 
   function load() {
     setLoading(true)
@@ -63,6 +73,22 @@ export default function AdminTasks() {
     setFilters({ status: '', priority: '', staff_id: '', customer_id: '' })
   }
 
+  async function confirmDelete() {
+    if (!deletingTask) return
+    setDeleteBusy(true)
+    setError('')
+    try {
+      await api.delete(`/tasks/${deletingTask.id}`)
+      setTasks((prev) => prev.filter((t) => t.id !== deletingTask.id))
+      setDeletingTask(null)
+      setViewingTask(null)
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Could not delete this task.'))
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
   const hasActiveFilters = Object.values(filters).some(Boolean)
 
   return (
@@ -81,6 +107,28 @@ export default function AdminTasks() {
           >
             <i className="fa-solid fa-plus" aria-hidden="true" /> Create New Task
           </button>
+        </div>
+
+        {/* Quick Status Filter Presets */}
+        <div className="filter-preset-buttons">
+          <span className="filter-label">Quick Filters:</span>
+          <button
+            type="button"
+            className={`btn-preset ${!filters.status ? 'active' : ''}`}
+            onClick={() => setFilter('status', '')}
+          >
+            All
+          </button>
+          {QUICK_STATUS_FILTERS.map(({ label, status }) => (
+            <button
+              key={status}
+              type="button"
+              className={`btn-preset ${filters.status === status ? 'active' : ''}`}
+              onClick={() => setFilter('status', status)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Filter Controls Bar */}
@@ -191,7 +239,7 @@ export default function AdminTasks() {
               </thead>
               <tbody>
                 {tasks.map((t) => (
-                  <tr key={t.id}>
+                  <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontWeight: 600 }}>{t.title}</span>
@@ -214,7 +262,13 @@ export default function AdminTasks() {
                       </span>
                     </td>
                     <td>
-                      <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
+                      <span
+                        className={`badge ${statusClass(t.status)}`}
+                        title={t.status === 'Undone' ? t.cannot_complete_reason : undefined}
+                      >
+                        {t.status}
+                        {t.status === 'Undone' && <i className="fa-solid fa-circle-info" style={{ marginLeft: 4 }} aria-hidden="true" />}
+                      </span>
                     </td>
                     <td style={{ fontSize: '0.8125rem' }}>
                       {t.estimated_minutes ? (
@@ -236,13 +290,28 @@ export default function AdminTasks() {
                     </td>
                     <td style={{ fontSize: '0.8125rem' }}>{formatDate(t.due_date)}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn-table-action"
-                        onClick={() => setEditingTask(t)}
-                      >
-                        Edit
-                      </button>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          type="button"
+                          className="btn-table-action"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditingTask(t)
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-table-action danger"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDeletingTask(t)
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -270,73 +339,42 @@ export default function AdminTasks() {
                 </>
               )}
               renderDetail={(t, close) => (
-                <div className="detail-list">
-                  <div className="detail-row">
-                    <span className="detail-row-label">Customer</span>
-                    <span className="detail-row-value">{t.customer?.name ?? '—'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Assigned Staff</span>
-                    <span className="detail-row-value">
-                      {t.assigned_staff?.name ?? <span className="badge inactive">Unassigned</span>}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Priority</span>
-                    <span className="detail-row-value">
-                      <span className={`badge ${priorityClass(t.priority)}`}>
-                        <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Status</span>
-                    <span className="detail-row-value">
-                      <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Estimated Time</span>
-                    <span className="detail-row-value">
-                      {t.estimated_minutes ? formatMinutes(t.estimated_minutes) : '—'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Actual Time Logged</span>
-                    <span className="detail-row-value">
-                      {t.total_logged_secs ? formatDuration(t.total_logged_secs) : '—'}
-                    </span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Due Date</span>
-                    <span className="detail-row-value">{formatDate(t.due_date)}</span>
-                  </div>
-                  {t.is_repeating && (
-                    <div className="detail-row">
-                      <span className="detail-row-label">Recurrence</span>
-                      <span className="detail-row-value">
-                        <i className="fa-solid fa-rotate" aria-hidden="true" /> {t.repeat_frequency}
-                      </span>
-                    </div>
-                  )}
-                  <div className="detail-actions">
-                    <button
-                      type="button"
-                      className="btn-table-action"
-                      onClick={() => {
-                        close()
-                        setEditingTask(t)
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </div>
+                <TaskDetailView
+                  task={t}
+                  onEdit={() => {
+                    close()
+                    setEditingTask(t)
+                  }}
+                  onDelete={() => {
+                    close()
+                    setDeletingTask(t)
+                  }}
+                />
               )}
             />
           )}
         </div>
       </div>
+
+      {/* Popup Window: View Task Details (description, etc.) */}
+      <Modal
+        isOpen={Boolean(viewingTask)}
+        onClose={() => setViewingTask(null)}
+        title={viewingTask?.title || ''}
+        subtitle={`Task #${viewingTask?.id || ''}`}
+        size="sm"
+      >
+        {viewingTask && (
+          <TaskDetailView
+            task={viewingTask}
+            onEdit={() => {
+              setEditingTask(viewingTask)
+              setViewingTask(null)
+            }}
+            onDelete={() => setDeletingTask(viewingTask)}
+          />
+        )}
+      </Modal>
 
       {/* Popup Window: Create Task Modal */}
       <Modal
@@ -368,6 +406,17 @@ export default function AdminTasks() {
           />
         )}
       </Modal>
+
+      <ConfirmModal
+        isOpen={Boolean(deletingTask)}
+        onClose={() => setDeletingTask(null)}
+        onConfirm={confirmDelete}
+        title="Delete Task"
+        message={`"${deletingTask?.title}" will be moved to Deleted Tasks. An admin can restore it or delete it permanently from there.`}
+        confirmLabel="Delete Task"
+        danger
+        busy={deleteBusy}
+      />
     </div>
   )
 }

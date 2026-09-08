@@ -87,6 +87,11 @@
   color: var(--text-primary);
 }
 
+.detail-row-value.detail-row-multiline {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
 .detail-actions {
   display: flex;
   gap: 8px;

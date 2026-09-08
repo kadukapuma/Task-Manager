@@ -43,3 +43,34 @@
   border-color: var(--primary);
 }
 
+.customers-actions-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .customers-top-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .customers-actions-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .customer-search-input {
+    max-width: none;
+    width: 100%;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .btn-primary-add {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

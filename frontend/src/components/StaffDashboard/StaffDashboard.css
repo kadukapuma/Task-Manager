@@ -6,7 +6,7 @@
 
 .staff-dashboard-filter-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
   display: flex;
@@ -30,9 +30,9 @@
 }
 
 .btn-preset {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   padding: 6px 12px;
   border-radius: var(--radius-md);
   font-size: 0.8125rem;
@@ -68,10 +68,10 @@
 
 .date-field input {
   padding: 6px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-size: 0.8125rem;
-  background: var(--bg-body);
-  color: var(--text-main);
+  background: var(--bg-app);
+  color: var(--text-primary);
 }
 

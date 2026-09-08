@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Task;
 use App\Models\TimeLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -147,6 +148,68 @@ class TaskController extends Controller
         return $this->ok($this->freshTask($task), 'Task marked done.');
     }
 
+    public function cannotComplete(Request $request, Task $task)
+    {
+        $this->authorizeTaskAction($request, $task);
+
+        if (in_array($task->status, ['Done', 'Undone'], true)) {
+            return $this->ok(null, "Task can't be marked incomplete from its current status.", Response::HTTP_CONFLICT);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $this->closeOpenTimeLog($task);
+
+        $task->update([
+            'status' => 'Undone',
+            'cannot_complete_reason' => $validated['reason'],
+        ]);
+
+        return $this->ok($this->freshTask($task), 'Task marked as undone.');
+    }
+
+    public function destroy(Task $task)
+    {
+        $task->delete();
+
+        return $this->ok(null, 'Task moved to Deleted Tasks.');
+    }
+
+    /**
+     * Soft-deleted tasks awaiting review -- an admin can restore or
+     * permanently delete them from here.
+     */
+    public function deleted()
+    {
+        $tasks = Task::onlyTrashed()
+            ->with('customer', 'assignedStaff')
+            ->withSum('timeLogs as total_logged_secs', 'duration_secs')
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return $this->ok($tasks);
+    }
+
+    public function restore(Task $task)
+    {
+        $task->restore();
+
+        return $this->ok($this->freshTask($task), 'Task restored.');
+    }
+
+    public function forceDelete(Task $task)
+    {
+        foreach ($task->attachments as $attachment) {
+            Storage::disk('local')->delete($attachment->path);
+        }
+
+        $task->forceDelete();
+
+        return $this->ok(null, 'Task permanently deleted.');
+    }
+
     /**
      * Reload a task from the database with its relations and the
      * total time logged against it, so every response carries the
@@ -155,13 +218,13 @@ class TaskController extends Controller
      */
     private function freshTask(Task $task): Task
     {
-        return $task->fresh(['customer', 'assignedStaff'])
+        return $task->fresh(['customer', 'assignedStaff', 'activeTimeLog', 'attachments'])
             ->loadSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 
     private function baseQuery()
     {
-        return Task::with('customer', 'assignedStaff')
+        return Task::with('customer', 'assignedStaff', 'activeTimeLog', 'attachments')
             ->withSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 

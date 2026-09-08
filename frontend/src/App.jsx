@@ -11,6 +11,9 @@ import StaffLayout from './pages/StaffLayout/StaffLayout'
 import StaffHome from './pages/StaffHome/StaffHome'
 import AdminLayout from './pages/AdminLayout/AdminLayout'
 import AdminTasks from './pages/AdminTasks/AdminTasks'
+import AdminStaffWork from './pages/AdminStaffWork/AdminStaffWork'
+import AdminAssignTasks from './pages/AdminAssignTasks/AdminAssignTasks'
+import AdminDeletedTasks from './pages/AdminDeletedTasks/AdminDeletedTasks'
 import AdminCustomers from './pages/AdminCustomers/AdminCustomers'
 
 function HomeRedirect() {
@@ -41,6 +44,9 @@ export default function App() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="tasks" element={<AdminTasks />} />
+                <Route path="staff-work" element={<AdminStaffWork />} />
+                <Route path="assign" element={<AdminAssignTasks />} />
+                <Route path="deleted-tasks" element={<AdminDeletedTasks />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="change-password" element={<ChangePassword />} />

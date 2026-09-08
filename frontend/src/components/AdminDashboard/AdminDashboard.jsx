@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
-import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusClass, statusColor } from '../../utils/format'
 import StaffPicker from '../StaffPicker/StaffPicker'
 import MobileCardList from '../MobileCardList/MobileCardList'
+import BarChart from '../charts/BarChart'
 import './AdminDashboard.css'
 
 const PRIORITY_ICON = {
@@ -38,6 +39,39 @@ export default function AdminDashboard() {
   }
 
   useEffect(load, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function setPreset(type) {
+    const now = new Date()
+    let f = ''
+    let t = ''
+
+    if (type === 'today') {
+      f = now.toISOString().slice(0, 10)
+      t = f
+    } else if (type === 'week') {
+      const first = now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+      const monday = new Date(now.setDate(first))
+      f = monday.toISOString().slice(0, 10)
+      t = new Date().toISOString().slice(0, 10)
+    } else if (type === 'month') {
+      f = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+      t = new Date().toISOString().slice(0, 10)
+    }
+
+    setFrom(f)
+    setTo(t)
+    setLoading(true)
+    setError('')
+    const params = {}
+    if (f) params.from = f
+    if (t) params.to = t
+
+    api
+      .get('/dashboard/summary', { params })
+      .then(({ data }) => setSummary(data.data))
+      .catch((err) => setError(apiErrorMessage(err, 'Could not load the dashboard.')))
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     api
@@ -83,48 +117,59 @@ export default function AdminDashboard() {
           {/* Top KPI Cards */}
           <div className="kpi-grid">
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.tasks_completed_this_month}</span>
-                <span className="kpi-label">Completed This Month</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini success"><i className="fa-solid fa-check" aria-hidden="true" /></span>
+                <span className="kpi-label" title="Completed this month">Completed</span>
               </div>
-              <div className="kpi-icon-pill success"><i className="fa-solid fa-check" aria-hidden="true" /></div>
+              <span className="kpi-value">{summary.tasks_completed_this_month}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.tasks_pending}</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini warning"><i className="fa-regular fa-hourglass-half" aria-hidden="true" /></span>
                 <span className="kpi-label">Tasks Pending</span>
               </div>
-              <div className="kpi-icon-pill warning"><i className="fa-regular fa-hourglass-half" aria-hidden="true" /></div>
+              <span className="kpi-value">{summary.tasks_pending}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.open_urgent_tasks?.length || 0}</span>
-                <span className="kpi-label">Urgent / Fire Queue</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini fire"><i className="fa-solid fa-fire" aria-hidden="true" /></span>
+                <span className="kpi-label">Urgent / Fire</span>
               </div>
-              <div className="kpi-icon-pill" style={{ background: 'var(--fire-subtle)', color: 'var(--fire)' }}>
-                <i className="fa-solid fa-fire" aria-hidden="true" />
-              </div>
+              <span className="kpi-value">{summary.open_urgent_tasks?.length || 0}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.repeating_tasks?.length || 0}</span>
-                <span className="kpi-label">Active Repeating Tasks</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini primary"><i className="fa-solid fa-rotate" aria-hidden="true" /></span>
+                <span className="kpi-label">Repeating</span>
               </div>
-              <div className="kpi-icon-pill primary"><i className="fa-solid fa-rotate" aria-hidden="true" /></div>
+              <span className="kpi-value">{summary.repeating_tasks?.length || 0}</span>
             </div>
 
             <div className="kpi-card">
-              <div className="kpi-info">
-                <span className="kpi-value">{summary.unassigned_tasks?.length || 0}</span>
-                <span className="kpi-label">Unassigned Tasks</span>
+              <div className="kpi-card-top">
+                <span className="kpi-icon-mini neutral"><i className="fa-solid fa-inbox" aria-hidden="true" /></span>
+                <span className="kpi-label">Unassigned</span>
               </div>
-              <div className="kpi-icon-pill" style={{ background: 'var(--warning-subtle)', color: 'var(--warning-text)' }}>
-                <i className="fa-solid fa-inbox" aria-hidden="true" />
-              </div>
+              <span className="kpi-value">{summary.unassigned_tasks?.length || 0}</span>
             </div>
+          </div>
+
+          {/* Task Status Overview Chart */}
+          <div className="dashboard-card">
+            <div className="dashboard-card-header">
+              <h2 className="dashboard-card-title">Task Status Overview</h2>
+            </div>
+            <BarChart
+              orientation="horizontal"
+              data={summary.status_breakdown.map((s) => ({
+                label: s.status,
+                value: s.count,
+                color: statusColor(s.status),
+              }))}
+            />
           </div>
 
           {/* Open Fire / Urgent Tasks Priority Card */}
@@ -336,6 +381,22 @@ export default function AdminDashboard() {
               <h2 className="dashboard-card-title">Staff Time Logged Analytics</h2>
             </div>
 
+            <div className="filter-preset-buttons">
+              <span className="filter-label">Quick Filters:</span>
+              <button type="button" className={`btn-preset ${!from && !to ? 'active' : ''}`} onClick={() => setPreset('all')}>
+                All Time
+              </button>
+              <button type="button" className="btn-preset" onClick={() => setPreset('today')}>
+                Today
+              </button>
+              <button type="button" className="btn-preset" onClick={() => setPreset('week')}>
+                This Week
+              </button>
+              <button type="button" className="btn-preset" onClick={() => setPreset('month')}>
+                This Month
+              </button>
+            </div>
+
             <div className="date-filters-bar">
               <div className="date-filter-field">
                 <label htmlFor="from_date">From Date</label>
@@ -360,6 +421,17 @@ export default function AdminDashboard() {
               </button>
             </div>
 
+            {summary.time_per_staff.length > 0 && (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <BarChart
+                  orientation="vertical"
+                  height={160}
+                  data={summary.time_per_staff.map((row) => ({ label: row.staff_name, value: row.total_secs }))}
+                  formatValue={(v) => formatDuration(v)}
+                />
+              </div>
+            )}
+
             <div className="modern-table-container">
               {summary.time_per_staff.length === 0 ? (
                 <div className="task-empty-state">
@@ -371,8 +443,12 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Staff Member</th>
+                      <th>Days Worked</th>
                       <th>Total Time Logged</th>
-                      <th>Tasks Completed</th>
+                      <th>Finished</th>
+                      <th>Pending</th>
+                      <th>Paused</th>
+                      <th>Undone</th>
                       <th>Total Est. Time</th>
                       <th>Completed Actual Time</th>
                       <th>Variance / Performance</th>
@@ -384,19 +460,23 @@ export default function AdminDashboard() {
                       return (
                         <tr key={row.staff_id}>
                           <td style={{ fontWeight: 600 }}>{row.staff_name}</td>
+                          <td>{row.days_worked}</td>
                           <td>
                             <span className="badge" style={{ background: 'var(--primary-subtle)', color: 'var(--primary)', fontSize: '0.8125rem' }}>
                               <i className="fa-regular fa-clock" aria-hidden="true" /> {formatDuration(row.total_secs)}
                             </span>
                           </td>
                           <td style={{ fontWeight: 600 }}>{row.completed_tasks_count}</td>
+                          <td>{row.pending_tasks_count}</td>
+                          <td>{row.paused_tasks_count}</td>
+                          <td>{row.undone_tasks_count}</td>
                           <td>{formatMinutes(row.total_estimated_minutes)}</td>
                           <td>{formatDuration(row.completed_actual_secs)}</td>
                           <td>
                             <span
                               className="badge"
                               style={{
-                                background: v.status === 'good' ? 'var(--success-subtle)' : v.status === 'over' ? 'var(--warning-subtle)' : 'var(--bg-hover)',
+                                background: v.status === 'good' ? 'var(--success-subtle)' : v.status === 'over' ? 'var(--warning-subtle)' : 'var(--bg-surface-hover)',
                                 color: v.status === 'good' ? 'var(--success-text)' : v.status === 'over' ? 'var(--warning-text)' : 'var(--text-secondary)',
                               }}
                             >
@@ -419,7 +499,7 @@ export default function AdminDashboard() {
                       <>
                         <span className="mdc-title">{row.staff_name}</span>
                         <span className="mdc-subtitle">
-                          <i className="fa-regular fa-clock" aria-hidden="true" /> {formatDuration(row.total_secs)} logged · {row.completed_tasks_count} completed
+                          <i className="fa-regular fa-clock" aria-hidden="true" /> {formatDuration(row.total_secs)} logged · {row.days_worked} days · {row.completed_tasks_count} completed
                         </span>
                         <div className="mdc-badges">
                           <span
@@ -440,12 +520,28 @@ export default function AdminDashboard() {
                     return (
                       <div className="detail-list">
                         <div className="detail-row">
+                          <span className="detail-row-label">Days Worked</span>
+                          <span className="detail-row-value">{row.days_worked}</span>
+                        </div>
+                        <div className="detail-row">
                           <span className="detail-row-label">Total Time Logged</span>
                           <span className="detail-row-value">{formatDuration(row.total_secs)}</span>
                         </div>
                         <div className="detail-row">
-                          <span className="detail-row-label">Tasks Completed</span>
+                          <span className="detail-row-label">Finished Tasks</span>
                           <span className="detail-row-value">{row.completed_tasks_count}</span>
+                        </div>
+                        <div className="detail-row">
+                          <span className="detail-row-label">Pending Tasks</span>
+                          <span className="detail-row-value">{row.pending_tasks_count}</span>
+                        </div>
+                        <div className="detail-row">
+                          <span className="detail-row-label">Paused Tasks</span>
+                          <span className="detail-row-value">{row.paused_tasks_count}</span>
+                        </div>
+                        <div className="detail-row">
+                          <span className="detail-row-label">Undone Tasks</span>
+                          <span className="detail-row-value">{row.undone_tasks_count}</span>
                         </div>
                         <div className="detail-row">
                           <span className="detail-row-label">Total Estimated Time</span>

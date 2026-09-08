@@ -141,6 +141,12 @@
   border-color: rgba(93, 214, 44, 0.3);
 }
 
+.btn-table-action.danger {
+  background: var(--danger-subtle);
+  color: var(--danger-text);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
 .btn-table-action.danger:hover:not(:disabled) {
   background: var(--danger-subtle);
   color: var(--danger);

@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import StaffPicker from '../StaffPicker/StaffPicker'
+import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 import './TaskForm.css'
 
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
-const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done']
+const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
 const FREQUENCIES = ['Daily', 'Weekly', 'Monthly']
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_FILES = 5
 
 function initialState(task) {
   return {
@@ -16,7 +20,9 @@ function initialState(task) {
     assigned_staff_id: task?.assigned_staff_id ?? '',
     priority: task?.priority ?? 'Normal',
     status: task?.status ?? 'Pending',
-    estimated_hours: task?.estimated_minutes ? (task.estimated_minutes / 60).toString() : '',
+    cannot_complete_reason: task?.cannot_complete_reason ?? '',
+    estimated_hours: task?.estimated_minutes ? Math.floor(task.estimated_minutes / 60).toString() : '',
+    estimated_minutes_part: task?.estimated_minutes ? (task.estimated_minutes % 60).toString() : '',
     due_date: task?.due_date ? task.due_date.slice(0, 10) : '',
     is_repeating: task?.is_repeating ?? false,
     repeat_frequency: task?.repeat_frequency ?? '',
@@ -36,6 +42,11 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  const [pendingFiles, setPendingFiles] = useState([])
+  const [existingAttachments, setExistingAttachments] = useState(task?.attachments ?? [])
+  const [fileError, setFileError] = useState('')
+  const [deletingAttachmentId, setDeletingAttachmentId] = useState(null)
+
   useEffect(() => {
     api.get('/customers').then(({ data }) => setCustomers(data.data)).catch(() => {})
     // /users is admin-only -- staff creating their own task never assign anyone.
@@ -54,6 +65,48 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
+  function handleFilesSelected(e) {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    setFileError('')
+
+    const total = pendingFiles.length + existingAttachments.length + files.length
+    if (total > MAX_FILES) {
+      setFileError(`You can attach up to ${MAX_FILES} files per task.`)
+      return
+    }
+
+    for (const file of files) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        setFileError(`"${file.name}" isn't an image or PDF.`)
+        return
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        setFileError(`"${file.name}" is larger than 10MB.`)
+        return
+      }
+    }
+
+    setPendingFiles((prev) => [...prev, ...files])
+  }
+
+  function removePendingFile(index) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function deleteExistingAttachment(attachment) {
+    setDeletingAttachmentId(attachment.id)
+    setFileError('')
+    try {
+      await api.delete(`/tasks/${task.id}/attachments/${attachment.id}`)
+      setExistingAttachments((prev) => prev.filter((a) => a.id !== attachment.id))
+    } catch (err) {
+      setFileError(apiErrorMessage(err, 'Could not remove that attachment.'))
+    } finally {
+      setDeletingAttachmentId(null)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -70,13 +123,21 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
       setError('Choose a repeat frequency for repeating task.')
       return
     }
+    if (isEdit && form.status === 'Undone' && !form.cannot_complete_reason.trim()) {
+      setError('A reason is required when marking a task as undone.')
+      return
+    }
+
+    const estHours = form.estimated_hours ? parseInt(form.estimated_hours, 10) || 0 : 0
+    const estMinutes = form.estimated_minutes_part ? parseInt(form.estimated_minutes_part, 10) || 0 : 0
+    const totalEstimatedMinutes = estHours * 60 + estMinutes
 
     const payload = {
       title: form.title,
       description: form.description || null,
       assigned_staff_id: form.assigned_staff_id || null,
       priority: form.priority,
-      estimated_minutes: form.estimated_hours ? Math.round(parseFloat(form.estimated_hours) * 60) : null,
+      estimated_minutes: totalEstimatedMinutes > 0 ? totalEstimatedMinutes : null,
       due_date: form.due_date || null,
       is_repeating: form.is_repeating,
       repeat_frequency: form.is_repeating ? form.repeat_frequency : null,
@@ -84,6 +145,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
     if (isEdit) {
       payload.status = form.status
+      payload.cannot_complete_reason = form.status === 'Undone' ? form.cannot_complete_reason : null
     }
 
     if (creatingCustomer) {
@@ -97,7 +159,19 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
       const { data } = isEdit
         ? await api.patch(`/tasks/${task.id}`, payload)
         : await api.post('/tasks', payload)
-      onSaved(data.data)
+
+      let savedTask = data.data
+
+      if (pendingFiles.length > 0) {
+        const formData = new FormData()
+        pendingFiles.forEach((file) => formData.append('files[]', file))
+        const { data: uploadData } = await api.post(`/tasks/${savedTask.id}/attachments`, formData)
+        savedTask = { ...savedTask, attachments: [...existingAttachments, ...uploadData.data] }
+      } else {
+        savedTask = { ...savedTask, attachments: existingAttachments }
+      }
+
+      onSaved(savedTask)
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not save task.'))
     } finally {
@@ -133,6 +207,58 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
           value={form.description}
           onChange={(e) => set('description', e.target.value)}
         />
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="task_files">Attachments (images or PDF, up to 10MB each)</label>
+        <input
+          id="task_files"
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+          multiple
+          onChange={handleFilesSelected}
+        />
+        {fileError && (
+          <p style={{ fontSize: '0.75rem', color: 'var(--danger-text)', margin: 0 }}>{fileError}</p>
+        )}
+
+        {(existingAttachments.length > 0 || pendingFiles.length > 0) && (
+          <div className="attachment-list">
+            {existingAttachments.map((a) => (
+              <div key={a.id} className="attachment-item">
+                <i className={`fa-solid ${attachmentIcon(a.mime_type)}`} aria-hidden="true" />
+                <span className="attachment-name" onClick={() => openAttachment(task.id, a)}>
+                  {a.original_name}
+                </span>
+                <span className="attachment-size">{formatFileSize(a.size)}</span>
+                <button
+                  type="button"
+                  className="attachment-remove"
+                  disabled={deletingAttachmentId === a.id}
+                  onClick={() => deleteExistingAttachment(a)}
+                  aria-label={`Remove ${a.original_name}`}
+                >
+                  <i className="fa-solid fa-xmark" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+            {pendingFiles.map((file, i) => (
+              <div key={`${file.name}-${i}`} className="attachment-item attachment-pending">
+                <i className={`fa-solid ${attachmentIcon(file.type)}`} aria-hidden="true" />
+                <span className="attachment-name">{file.name}</span>
+                <span className="attachment-size">{formatFileSize(file.size)}</span>
+                <button
+                  type="button"
+                  className="attachment-remove"
+                  onClick={() => removePendingFile(i)}
+                  aria-label={`Remove ${file.name}`}
+                >
+                  <i className="fa-solid fa-xmark" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="form-field">
@@ -258,16 +384,34 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
             )}
 
             <div className="form-field">
-              <label htmlFor="task_est_hours">Estimated Time (Hours)</label>
-              <input
-                id="task_est_hours"
-                type="number"
-                step="0.25"
-                min="0"
-                placeholder="e.g. 1 or 1.5"
-                value={form.estimated_hours}
-                onChange={(e) => set('estimated_hours', e.target.value)}
-              />
+              <label htmlFor="task_est_hours">Estimated Time</label>
+              <div className="form-time-input-group">
+                <div className="form-time-input">
+                  <input
+                    id="task_est_hours"
+                    type="number"
+                    step="1"
+                    min="0"
+                    placeholder="0"
+                    value={form.estimated_hours}
+                    onChange={(e) => set('estimated_hours', e.target.value)}
+                  />
+                  <span>hrs</span>
+                </div>
+                <div className="form-time-input">
+                  <input
+                    id="task_est_minutes"
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="59"
+                    placeholder="0"
+                    value={form.estimated_minutes_part}
+                    onChange={(e) => set('estimated_minutes_part', e.target.value)}
+                  />
+                  <span>min</span>
+                </div>
+              </div>
             </div>
 
             <div className="form-field">
@@ -280,6 +424,20 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
               />
             </div>
           </div>
+
+          {isEdit && form.status === 'Undone' && (
+            <div className="form-field">
+              <label htmlFor="task_cannot_complete_reason">Reason This Task Is Undone *</label>
+              <textarea
+                id="task_cannot_complete_reason"
+                rows={3}
+                placeholder="Explain why this task couldn't be completed…"
+                value={form.cannot_complete_reason}
+                onChange={(e) => set('cannot_complete_reason', e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <label className="form-toggle-row">
             <input

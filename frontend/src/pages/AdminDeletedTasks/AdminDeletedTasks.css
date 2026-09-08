@@ -1,0 +1,11 @@
+.admin-deleted-tasks-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-deleted-tasks-container .tasks-top-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}

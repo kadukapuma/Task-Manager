@@ -1,4 +1,5 @@
-import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
+import { useEffect, useState } from 'react'
+import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass } from '../../utils/format'
 import './TaskCard.css'
 
 const PRIORITY_ICON = {
@@ -14,14 +15,33 @@ export default function TaskCard({
   onStart,
   onPause,
   onComplete,
+  onCannotComplete,
+  onView,
 }) {
   const priorityIcon = PRIORITY_ICON[task.priority] || 'fa-thumbtack'
+
+  const isLive = task.status === 'In Progress' && Boolean(task.active_time_log)
+  const [liveNow, setLiveNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!isLive) return
+    const id = setInterval(() => setLiveNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [isLive])
+
+  const liveElapsedSecs = isLive
+    ? (task.total_logged_secs || 0) + Math.floor((liveNow - new Date(task.active_time_log.start_time).getTime()) / 1000)
+    : null
 
   return (
     <div className={`task-card-modern ${priorityClass(task.priority)}`}>
       <div className="task-card-info">
         <div className="task-card-title-row">
+          <span className="task-card-id">#{task.id}</span>
           <span className="task-card-title">{task.title}</span>
+        </div>
+
+        <div className="task-card-badges">
           <span className={`badge ${priorityClass(task.priority)}`}>
             <i className={`fa-solid ${priorityIcon}`} aria-hidden="true" /> {task.priority}
           </span>
@@ -35,6 +55,12 @@ export default function TaskCard({
 
         {task.description && <p className="task-card-desc">{task.description}</p>}
 
+        {task.status === 'Undone' && task.cannot_complete_reason && (
+          <p className="task-card-reason">
+            <i className="fa-solid fa-circle-exclamation" aria-hidden="true" /> {task.cannot_complete_reason}
+          </p>
+        )}
+
         <div className="task-card-meta">
           {task.customer && (
             <span className="task-meta-item">
@@ -47,10 +73,17 @@ export default function TaskCard({
               <i className="fa-regular fa-clock" aria-hidden="true" /> Est: {formatMinutes(task.estimated_minutes)}
             </span>
           )}
-          {task.total_logged_secs > 0 && (
-            <span className="task-meta-item">
-              <i className="fa-solid fa-stopwatch" aria-hidden="true" /> Actual: {formatDuration(task.total_logged_secs)}
+          {isLive ? (
+            <span className="task-meta-item task-meta-live">
+              <span className="live-dot" aria-hidden="true" />
+              <i className="fa-solid fa-stopwatch" aria-hidden="true" /> {formatStopwatch(liveElapsedSecs)}
             </span>
+          ) : (
+            task.total_logged_secs > 0 && (
+              <span className="task-meta-item">
+                <i className="fa-solid fa-stopwatch" aria-hidden="true" /> Actual: {formatDuration(task.total_logged_secs)}
+              </span>
+            )
           )}
           <span className="task-meta-item">
             <i className="fa-regular fa-calendar" aria-hidden="true" /> Due: {formatDate(task.due_date)}
@@ -65,14 +98,30 @@ export default function TaskCard({
       </div>
 
       <div className="task-card-actions">
+        {onView && (
+          <button
+            type="button"
+            className="btn-action btn-view"
+            aria-label="View Details"
+            title="View Details"
+            onClick={() => onView(task)}
+          >
+            <i className="fa-regular fa-eye" aria-hidden="true" />
+            <span className="btn-action-label">View Details</span>
+          </button>
+        )}
+
         {!readOnly && (task.status === 'Pending' || task.status === 'Paused') && (
           <button
             type="button"
             className="btn-action btn-start"
+            aria-label="Start"
+            title="Start"
             disabled={busy}
             onClick={() => onStart(task)}
           >
-            <i className="fa-solid fa-play" aria-hidden="true" /> Start
+            <i className="fa-solid fa-play" aria-hidden="true" />
+            <span className="btn-action-label">Start</span>
           </button>
         )}
 
@@ -81,20 +130,40 @@ export default function TaskCard({
             <button
               type="button"
               className="btn-action btn-pause"
+              aria-label="Pause"
+              title="Pause"
               disabled={busy}
               onClick={() => onPause(task)}
             >
-              <i className="fa-solid fa-pause" aria-hidden="true" /> Pause
+              <i className="fa-solid fa-pause" aria-hidden="true" />
+              <span className="btn-action-label">Pause</span>
             </button>
             <button
               type="button"
               className="btn-action btn-complete"
+              aria-label="Mark Done"
+              title="Mark Done"
               disabled={busy}
               onClick={() => onComplete(task)}
             >
-              <i className="fa-solid fa-check" aria-hidden="true" /> Mark Done
+              <i className="fa-solid fa-check" aria-hidden="true" />
+              <span className="btn-action-label">Mark Done</span>
             </button>
           </>
+        )}
+
+        {!readOnly && ['Pending', 'In Progress', 'Paused'].includes(task.status) && (
+          <button
+            type="button"
+            className="btn-action btn-cannot-complete"
+            aria-label="Mark Undone"
+            title="Mark Undone"
+            disabled={busy}
+            onClick={() => onCannotComplete(task)}
+          >
+            <i className="fa-solid fa-ban" aria-hidden="true" />
+            <span className="btn-action-label">Mark Undone</span>
+          </button>
         )}
       </div>
     </div>
