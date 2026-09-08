@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Gate;
 
 class DashboardController extends Controller
 {
-    private const PRIORITY_ORDER = "FIELD(priority, 'Fire', 'Urgent', 'Normal')";
+    // A CASE expression (not MySQL's FIELD()) so it also runs on sqlite in tests.
+    private const PRIORITY_ORDER = "CASE priority WHEN 'Fire' THEN 0 WHEN 'Urgent' THEN 1 WHEN 'Normal' THEN 2 ELSE 3 END";
 
     public function summary(Request $request)
     {
@@ -28,7 +29,7 @@ class DashboardController extends Controller
             'open_urgent_tasks' => Task::with('customer', 'assignedStaff')
                 ->whereIn('priority', ['Fire', 'Urgent'])
                 ->whereIn('status', ['Pending', 'In Progress', 'Paused'])
-                ->orderByRaw("FIELD(priority, 'Fire', 'Urgent')")
+                ->orderByRaw("CASE priority WHEN 'Fire' THEN 0 WHEN 'Urgent' THEN 1 ELSE 2 END")
                 ->orderByRaw('due_date IS NULL, due_date ASC')
                 ->get(),
             'unassigned_tasks' => Task::with('customer')

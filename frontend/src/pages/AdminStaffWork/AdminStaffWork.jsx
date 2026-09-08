@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import Modal from '../../components/Modal/Modal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
+import StaffTimeAnalytics from '../../components/StaffTimeAnalytics/StaffTimeAnalytics'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
 import './AdminStaffWork.css'
 
@@ -12,6 +13,49 @@ const QUICK_STATUS_FILTERS = [
   { label: 'Finished', status: 'Done' },
   { label: 'Undone', status: 'Undone' },
 ]
+
+const PERIOD_FILTERS = [
+  { label: 'Daily', value: 'day' },
+  { label: 'Weekly', value: 'week' },
+  { label: 'Monthly', value: 'month' },
+]
+
+function toDateStr(date) {
+  return date.toLocaleDateString('en-CA') // YYYY-MM-DD, in local time
+}
+
+function todayStr() {
+  return toDateStr(new Date())
+}
+
+function weekStartStr() {
+  const now = new Date()
+  const day = now.getDay()
+  const diffToMonday = day === 0 ? -6 : 1 - day
+  return toDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday))
+}
+
+function monthStartStr() {
+  const now = new Date()
+  return toDateStr(new Date(now.getFullYear(), now.getMonth(), 1))
+}
+
+/** Range for a given quick-filter value, e.g. presetRange('month') -> { from, to }. */
+function presetRange(value) {
+  const today = todayStr()
+  if (value === 'day') return { from: today, to: today }
+  if (value === 'week') return { from: weekStartStr(), to: today }
+  return { from: monthStartStr(), to: today }
+}
+
+/** Does this task's created_at fall within [from, to] (inclusive, local dates)? */
+function isInRange(createdAt, from, to) {
+  if (!createdAt) return false
+  const created = new Date(createdAt)
+  if (from && created < new Date(`${from}T00:00:00`)) return false
+  if (to && created > new Date(`${to}T23:59:59.999`)) return false
+  return true
+}
 
 const PRIORITY_ICON = {
   Fire: 'fa-fire',
@@ -36,12 +80,20 @@ export default function AdminStaffWork() {
 
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [from, setFrom] = useState(() => monthStartStr())
+  const [to, setTo] = useState(() => todayStr())
   const [viewingTask, setViewingTask] = useState(null)
+
+  function applyPreset(value) {
+    const range = presetRange(value)
+    setFrom(range.from)
+    setTo(range.to)
+  }
 
   function load() {
     setLoading(true)
     setError('')
-    Promise.all([api.get('/tasks'), api.get('/users')])
+    Promise.all([api.get('/tasks', { params: { per_page: 1000 } }), api.get('/users')])
       .then(([tasksRes, usersRes]) => {
         setTasks(tasksRes.data.data)
         setStaff(usersRes.data.filter((u) => u.role === 'staff'))
@@ -52,12 +104,17 @@ export default function AdminStaffWork() {
 
   useEffect(load, [])
 
+  const periodTasks = useMemo(
+    () => tasks.filter((t) => isInRange(t.created_at, from, to)),
+    [tasks, from, to],
+  )
+
   const staffCounts = useMemo(() => {
     const counts = {}
     for (const s of staff) {
       counts[s.id] = { working: 0, paused: 0, finished: 0, cannotComplete: 0, pending: 0 }
     }
-    for (const t of tasks) {
+    for (const t of periodTasks) {
       if (!t.assigned_staff_id || !counts[t.assigned_staff_id]) continue
       if (t.status === 'In Progress') counts[t.assigned_staff_id].working++
       else if (t.status === 'Paused') counts[t.assigned_staff_id].paused++
@@ -66,14 +123,14 @@ export default function AdminStaffWork() {
       else if (t.status === 'Pending') counts[t.assigned_staff_id].pending++
     }
     return counts
-  }, [staff, tasks])
+  }, [staff, periodTasks])
 
   const filteredTasks = useMemo(() => {
-    return tasks
+    return periodTasks
       .filter((t) => t.assigned_staff_id)
       .filter((t) => !selectedStaffId || String(t.assigned_staff_id) === String(selectedStaffId))
       .filter((t) => !statusFilter || t.status === statusFilter)
-  }, [tasks, selectedStaffId, statusFilter])
+  }, [periodTasks, selectedStaffId, statusFilter])
 
   function selectStaff(id) {
     setSelectedStaffId((prev) => (String(prev) === String(id) ? '' : id))
@@ -86,6 +143,35 @@ export default function AdminStaffWork() {
           <div className="tasks-title-group">
             <h2>Staff Work Overview</h2>
             <span className="task-count-badge">{staff.length} staff</span>
+          </div>
+        </div>
+
+        <div className="filter-preset-buttons">
+          <span className="filter-label">Time Period:</span>
+          {PERIOD_FILTERS.map(({ label, value }) => {
+            const range = presetRange(value)
+            const active = from === range.from && to === range.to
+            return (
+              <button
+                key={value}
+                type="button"
+                className={`btn-preset ${active ? 'active' : ''}`}
+                onClick={() => applyPreset(value)}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="date-filters-bar">
+          <div className="date-filter-field">
+            <label htmlFor="staffwork_from">From Date</label>
+            <input id="staffwork_from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="date-filter-field">
+            <label htmlFor="staffwork_to">To Date</label>
+            <input id="staffwork_to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </div>
 
@@ -152,6 +238,8 @@ export default function AdminStaffWork() {
               )
             })}
           </div>
+
+
 
           {/* Filtered task table */}
           <div className="tasks-table-card">
@@ -225,6 +313,8 @@ export default function AdminStaffWork() {
               )}
             </div>
           </div>
+            {/* Per-staff time logged analytics -- filterable by date range */}
+            <StaffTimeAnalytics />
         </>
       )}
 

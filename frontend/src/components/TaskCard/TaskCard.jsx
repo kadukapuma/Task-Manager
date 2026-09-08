@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass } from '../../utils/format'
 import './TaskCard.css'
 
@@ -23,14 +23,19 @@ export default function TaskCard({
   const isLive = task.status === 'In Progress' && Boolean(task.active_time_log)
   const [liveNow, setLiveNow] = useState(() => Date.now())
 
-  useEffect(() => {
+  // Reset the clock the instant this card goes live -- otherwise `liveNow`
+  // is left over from whenever the card first mounted (e.g. minutes ago,
+  // while it was still Pending), and the first tick renders a wildly wrong
+  // elapsed time before snapping to the correct one a second later.
+  useLayoutEffect(() => {
     if (!isLive) return
+    setLiveNow(Date.now())
     const id = setInterval(() => setLiveNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [isLive])
 
   const liveElapsedSecs = isLive
-    ? (task.total_logged_secs || 0) + Math.floor((liveNow - new Date(task.active_time_log.start_time).getTime()) / 1000)
+    ? Number(task.total_logged_secs || 0) + Math.floor((liveNow - new Date(task.active_time_log.start_time).getTime()) / 1000)
     : null
 
   return (

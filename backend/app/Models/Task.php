@@ -41,6 +41,10 @@ class Task extends Model
             'is_repeating' => 'boolean',
             'due_date' => 'date',
             'completed_at' => 'datetime',
+            // withSum()/loadSum() aggregates come back from the DB driver as
+            // strings -- without this, `total_logged_secs + elapsedSeconds`
+            // in JS silently does string concatenation instead of addition.
+            'total_logged_secs' => 'integer',
         ];
     }
 

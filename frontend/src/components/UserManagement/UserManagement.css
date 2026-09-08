@@ -46,6 +46,7 @@
 
 .modern-table-container {
   overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
@@ -58,18 +59,30 @@
 }
 
 .modern-table th {
-  background: var(--bg-surface-hover);
-  color: var(--text-secondary);
+  background: var(--shell-bg);
+  color: var(--shell-text-muted);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.08em;
+  padding: 0.875rem 1.125rem;
+  border-bottom: none;
+  white-space: nowrap;
+  position: relative;
+}
+
+.modern-table th:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 28%;
+  bottom: 28%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .modern-table td {
-  padding: 0.875rem 1rem;
+  padding: 0.875rem 1.125rem;
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
   vertical-align: middle;
@@ -81,6 +94,48 @@
 
 .modern-table tr:hover td {
   background: rgba(93, 214, 44, 0.02);
+}
+
+.table-cell-lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-cell-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-hover);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.table-cell-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.table-cell-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-cell-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-cell {
@@ -151,5 +206,53 @@
   background: var(--danger-subtle);
   color: var(--danger);
   border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-table-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+  transition: var(--transition);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.btn-table-icon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-table-icon:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-table-icon.view {
+  background: var(--success);
+}
+
+.btn-table-icon.view:hover:not(:disabled) {
+  background: var(--success-hover);
+}
+
+.btn-table-icon.edit {
+  background: var(--info);
+}
+
+.btn-table-icon.edit:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+.btn-table-icon.danger {
+  background: var(--danger);
+}
+
+.btn-table-icon.danger:hover:not(:disabled) {
+  background: var(--danger-text);
 }
 

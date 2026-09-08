@@ -26,7 +26,7 @@ export default function AdminAssignTasks() {
   function load() {
     setLoading(true)
     setError('')
-    Promise.all([api.get('/tasks'), api.get('/users')])
+    Promise.all([api.get('/tasks', { params: { per_page: 1000 } }), api.get('/users')])
       .then(([tasksRes, usersRes]) => {
         setTasks(tasksRes.data.data)
         setStaff(usersRes.data.filter((u) => u.role === 'staff'))

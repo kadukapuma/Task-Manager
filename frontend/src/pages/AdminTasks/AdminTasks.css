@@ -76,18 +76,65 @@
   border-color: var(--primary);
 }
 
+.filter-item input[type='date'] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  width: 100%;
+  height: 36px;
+}
+
+.filter-item input[type='date']:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
 @media (max-width: 768px) {
-  .filter-item select {
+  .filter-item select,
+  .filter-item input[type='date'] {
     font-size: 16px;
     min-height: 44px;
   }
 }
 
-.tasks-table-card {
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 1rem;
+  padding: 0.875rem 1.125rem;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+}
+
+.pagination-info {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-controls span {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Just a layout wrapper now -- the table itself (.modern-table-container)
+   already carries its own border/radius, so this no longer draws a second
+   card behind it. */
+.tasks-table-card {
+  display: block;
 }
 

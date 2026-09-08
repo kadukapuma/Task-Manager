@@ -28,7 +28,9 @@ export default function AdminTasks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [filters, setFilters] = useState({ status: '', priority: '', staff_id: '', customer_id: '' })
+  const [filters, setFilters] = useState({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
+  const [page, setPage] = useState(1)
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 })
 
   // Modal states for popup creation and editing
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -40,15 +42,18 @@ export default function AdminTasks() {
   function load() {
     setLoading(true)
     setError('')
-    const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
+    const params = { ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)), page }
     api
       .get('/tasks', { params })
-      .then(({ data }) => setTasks(data.data))
+      .then(({ data }) => {
+        setTasks(data.data)
+        setMeta(data.meta)
+      })
       .catch((err) => setError(apiErrorMessage(err, 'Could not load tasks.')))
       .finally(() => setLoading(false))
   }
 
-  useEffect(load, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(load, [filters, page]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     api.get('/users').then(({ data }) => setStaff(data.filter((u) => u.role === 'staff'))).catch(() => { })
@@ -56,12 +61,14 @@ export default function AdminTasks() {
   }, [])
 
   function setFilter(field, value) {
+    setPage(1)
     setFilters((f) => ({ ...f, [field]: value }))
   }
 
-  function handleCreated(newTask) {
-    setTasks((prev) => [newTask, ...prev])
+  function handleCreated() {
     setShowCreateModal(false)
+    setPage(1)
+    load()
   }
 
   function handleUpdated(updatedTask) {
@@ -70,7 +77,8 @@ export default function AdminTasks() {
   }
 
   function resetFilters() {
-    setFilters({ status: '', priority: '', staff_id: '', customer_id: '' })
+    setPage(1)
+    setFilters({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
   }
 
   async function confirmDelete() {
@@ -79,9 +87,9 @@ export default function AdminTasks() {
     setError('')
     try {
       await api.delete(`/tasks/${deletingTask.id}`)
-      setTasks((prev) => prev.filter((t) => t.id !== deletingTask.id))
       setDeletingTask(null)
       setViewingTask(null)
+      load()
     } catch (err) {
       setError(apiErrorMessage(err, 'Could not delete this task.'))
     } finally {
@@ -98,7 +106,7 @@ export default function AdminTasks() {
         <div className="tasks-header-row">
           <div className="tasks-title-group">
             <h2>All Work Tasks</h2>
-            <span className="task-count-badge">{tasks.length} items</span>
+            <span className="task-count-badge">{meta.total} items</span>
           </div>
           <button
             type="button"
@@ -189,6 +197,26 @@ export default function AdminTasks() {
             </select>
           </div>
 
+          <div className="filter-item">
+            <label htmlFor="f_from">Created From</label>
+            <input
+              id="f_from"
+              type="date"
+              value={filters.from}
+              onChange={(e) => setFilter('from', e.target.value)}
+            />
+          </div>
+
+          <div className="filter-item">
+            <label htmlFor="f_to">Created To</label>
+            <input
+              id="f_to"
+              type="date"
+              value={filters.to}
+              onChange={(e) => setFilter('to', e.target.value)}
+            />
+          </div>
+
           {hasActiveFilters && (
             <button
               type="button"
@@ -241,13 +269,23 @@ export default function AdminTasks() {
                 {tasks.map((t) => (
                   <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 600 }}>{t.title}</span>
-                        {t.is_repeating && (
-                          <span style={{ fontSize: '0.6875rem', color: 'var(--primary)', marginTop: 2 }}>
-                            <i className="fa-solid fa-rotate" aria-hidden="true" /> Recurring ({t.repeat_frequency})
+                      <div className="table-cell-lead">
+                        <span
+                          className="table-cell-icon"
+                          style={{ background: `var(--${t.priority === 'Fire' ? 'fire' : t.priority === 'Urgent' ? 'warning' : 'primary'}-subtle)`, color: `var(--${t.priority === 'Fire' ? 'fire' : t.priority === 'Urgent' ? 'warning' : 'primary'})` }}
+                        >
+                          <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" />
+                        </span>
+                        <span className="table-cell-text">
+                          <span className="table-cell-title">{t.title}</span>
+                          <span className="table-cell-subtitle">
+                            {t.is_repeating ? (
+                              <><i className="fa-solid fa-rotate" aria-hidden="true" /> Recurring ({t.repeat_frequency})</>
+                            ) : (
+                              `Task #${t.id}`
+                            )}
                           </span>
-                        )}
+                        </span>
                       </div>
                     </td>
                     <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
@@ -290,28 +328,18 @@ export default function AdminTasks() {
                     </td>
                     <td style={{ fontSize: '0.8125rem' }}>{formatDate(t.due_date)}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button
-                          type="button"
-                          className="btn-table-action"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingTask(t)
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-table-action danger"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setDeletingTask(t)
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className="btn-table-icon view"
+                        aria-label="View task"
+                        title="View task"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setViewingTask(t)
+                        }}
+                      >
+                        <i className="fa-solid fa-eye" aria-hidden="true" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -354,6 +382,33 @@ export default function AdminTasks() {
             />
           )}
         </div>
+
+        {!loading && meta.total > 0 && (
+          <div className="pagination-bar">
+            <span className="pagination-info">
+              Page {meta.current_page} of {meta.last_page} · {meta.total} total tasks
+            </span>
+            <div className="pagination-controls">
+              <button
+                type="button"
+                className="btn-table-action"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <i className="fa-solid fa-chevron-left" aria-hidden="true" /> Prev
+              </button>
+              <span>{meta.current_page} / {meta.last_page}</span>
+              <button
+                type="button"
+                className="btn-table-action"
+                disabled={page >= meta.last_page}
+                onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))}
+              >
+                Next <i className="fa-solid fa-chevron-right" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Popup Window: View Task Details (description, etc.) */}

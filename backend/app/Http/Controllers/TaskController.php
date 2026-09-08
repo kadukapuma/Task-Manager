@@ -13,20 +13,40 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
 {
-    private const PRIORITY_ORDER = "FIELD(priority, 'Fire', 'Urgent', 'Normal')";
+    // A CASE expression (not MySQL's FIELD()) so it also runs on sqlite in tests.
+    private const PRIORITY_ORDER = "CASE priority WHEN 'Fire' THEN 0 WHEN 'Urgent' THEN 1 WHEN 'Normal' THEN 2 ELSE 3 END";
 
+    /**
+     * Paginated by default (20/page) so the Tasks Management list stays
+     * fast as the table grows. Callers that genuinely want everything in
+     * one shot (e.g. the Staff Work / Assign Tasks pages, which filter
+     * client-side) pass a large `per_page` explicitly.
+     */
     public function index(Request $request)
     {
-        $tasks = $this->baseQuery()
+        $perPage = max(1, min((int) $request->query('per_page', 20), 1000));
+
+        $paginator = $this->baseQuery()
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('priority'), fn ($q, $priority) => $q->where('priority', $priority))
             ->when($request->query('staff_id'), fn ($q, $staffId) => $q->where('assigned_staff_id', $staffId))
             ->when($request->query('customer_id'), fn ($q, $customerId) => $q->where('customer_id', $customerId))
+            ->when($request->query('from'), fn ($q, $from) => $q->whereDate('created_at', '>=', $from))
+            ->when($request->query('to'), fn ($q, $to) => $q->whereDate('created_at', '<=', $to))
             ->orderByRaw(self::PRIORITY_ORDER)
             ->orderByRaw('due_date IS NULL, due_date ASC')
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return $this->ok($tasks);
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ]);
     }
 
     public function mine(Request $request)
