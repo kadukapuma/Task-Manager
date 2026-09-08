@@ -261,7 +261,7 @@ export default function AdminTasks() {
                   <th>Status</th>
                   <th>Est. Time</th>
                   <th>Actual Time</th>
-                  <th>Due Date</th>
+                  {/* <th>Due Date</th> */}
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -326,7 +326,7 @@ export default function AdminTasks() {
                         <span style={{ color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
-                    <td style={{ fontSize: '0.8125rem' }}>{formatDate(t.due_date)}</td>
+                    {/* <td style={{ fontSize: '0.8125rem' }}>{formatDate(t.due_date)}</td> */}
                     <td>
                       <button
                         type="button"

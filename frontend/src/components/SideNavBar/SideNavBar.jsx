@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
@@ -9,6 +9,23 @@ export default function SideNavBar({ links = [], title = 'Management', isOpen = 
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  // Desktop-only collapse (icon rail) -- remembered across visits, separate
+  // from the mobile open/close overlay which `isOpen`/`onClose` handle.
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('sidenav-collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sidenav-collapsed', String(collapsed))
+    } catch {
+      // ignore (private browsing, storage disabled, etc.)
+    }
+  }, [collapsed])
 
   const initials = user?.name
     ? user.name
@@ -23,7 +40,7 @@ export default function SideNavBar({ links = [], title = 'Management', isOpen = 
     <>
       <div className={`sidenav-backdrop ${isOpen ? 'show' : ''}`} onClick={onClose} />
 
-      <aside className={`sidenav-container ${isOpen ? 'open' : ''}`}>
+      <aside className={`sidenav-container ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidenav-header">
           <div className="sidenav-logo-icon">
             <i className="fa-solid fa-diagram-project" aria-hidden="true" />
@@ -32,6 +49,15 @@ export default function SideNavBar({ links = [], title = 'Management', isOpen = 
             <span className="sidenav-brand-name">TaskFlow</span>
             <span className="sidenav-brand-sub">{user?.role === 'admin' ? 'Admin Portal' : 'Staff Portal'}</span>
           </div>
+          <button
+            type="button"
+            className="sidenav-collapse-btn"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+            title={collapsed ? 'Expand menu' : 'Collapse menu'}
+          >
+            <i className={`fa-solid ${collapsed ? 'fa-angles-right' : 'fa-angles-left'}`} aria-hidden="true" />
+          </button>
           <button type="button" className="sidenav-close-btn" onClick={onClose} aria-label="Close menu">
             <i className="fa-solid fa-xmark" aria-hidden="true" />
           </button>
@@ -45,6 +71,7 @@ export default function SideNavBar({ links = [], title = 'Management', isOpen = 
               to={link.to}
               end={link.end}
               onClick={onClose}
+              title={collapsed ? link.label : undefined}
               className={({ isActive }) => `sidenav-link ${isActive ? 'active' : ''}`}
             >
               <i className={`fa-solid ${link.icon}`} aria-hidden="true" />

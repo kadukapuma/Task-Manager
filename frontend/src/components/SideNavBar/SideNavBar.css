@@ -34,6 +34,24 @@
   color: var(--shell-text);
 }
 
+.sidenav-collapse-btn {
+  display: flex;
+  background: transparent;
+  color: var(--shell-text-muted);
+  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.sidenav-collapse-btn:hover {
+  background: var(--shell-hover);
+  color: var(--shell-text);
+}
+
 .sidenav-backdrop {
   display: none;
 }
@@ -244,6 +262,58 @@
   color: var(--fire);
 }
 
+/* ---- Desktop: collapsible icon rail ---- */
+@media (min-width: 901px) {
+  .sidenav-container.collapsed {
+    width: 76px;
+    min-width: 76px;
+  }
+
+  .sidenav-container.collapsed .sidenav-header {
+    justify-content: center;
+    padding: 1.5rem 0.75rem 1.25rem;
+  }
+
+  .sidenav-container.collapsed .sidenav-brand-text {
+    display: none;
+  }
+
+  .sidenav-container.collapsed .sidenav-collapse-btn {
+    position: absolute;
+    right: -14px;
+    top: 22px;
+    background: var(--shell-bg-elevated);
+    border: 1px solid var(--shell-border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sidenav-container.collapsed .sidenav-section-title {
+    display: none;
+  }
+
+  .sidenav-container.collapsed .sidenav-link {
+    justify-content: center;
+    padding: 0.625rem;
+  }
+
+  .sidenav-container.collapsed .sidenav-link span {
+    display: none;
+  }
+
+  .sidenav-container.collapsed .sidenav-user-card {
+    justify-content: center;
+  }
+
+  .sidenav-container.collapsed .sidenav-user-info {
+    justify-content: center;
+  }
+
+  .sidenav-container.collapsed .sidenav-user-details,
+  .sidenav-container.collapsed .sidenav-logout-btn {
+    display: none;
+  }
+}
+
 /* ---- Mobile: off-canvas drawer ---- */
 @media (max-width: 900px) {
   .sidenav-container {
@@ -260,6 +330,10 @@
 
   .sidenav-close-btn {
     display: flex;
+  }
+
+  .sidenav-collapse-btn {
+    display: none;
   }
 
   .sidenav-theme-btn {

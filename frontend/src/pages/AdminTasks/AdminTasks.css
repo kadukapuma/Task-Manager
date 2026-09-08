@@ -138,3 +138,17 @@
   display: block;
 }
 
+/* Task titles wrap onto multiple lines instead of truncating with an
+   ellipsis -- scoped to this page's table body only. */
+.tasks-table-card .table-cell-lead {
+  align-items: flex-start;
+}
+
+.tasks-table-card .table-cell-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
