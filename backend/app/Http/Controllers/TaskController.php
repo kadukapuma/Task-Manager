@@ -133,6 +133,15 @@ class TaskController extends Controller
             return $this->ok(null, "Task can't be started from its current status.", Response::HTTP_CONFLICT);
         }
 
+        $hasActiveTask = Task::where('assigned_staff_id', $task->assigned_staff_id)
+            ->where('status', 'In Progress')
+            ->where('id', '!=', $task->id)
+            ->exists();
+
+        if ($hasActiveTask) {
+            return $this->ok(null, 'You already have an active task in progress. Please pause or complete it before starting another.', Response::HTTP_CONFLICT);
+        }
+
         TimeLog::create([
             'task_id' => $task->id,
             'staff_id' => $task->assigned_staff_id,
