@@ -38,6 +38,7 @@
   --danger: #dc2626;
   --danger-subtle: #fee2e2;
   --danger-text: #991b1b;
+  --danger-border: #b32929;
 
   --info: #0284c7;
   --info-subtle: #e0f2fe;
@@ -115,6 +116,7 @@
     --danger: #f87171;
     --danger-subtle: #3f0d0d;
     --danger-text: #fca5a5;
+    --danger-border: #dc2626;
 
     --info: #38bdf8;
     --info-subtle: #082f3d;
@@ -163,6 +165,7 @@
   --danger: #f87171;
   --danger-subtle: #3f0d0d;
   --danger-text: #fca5a5;
+  --danger-border: #dc2626;
 
   --info: #38bdf8;
   --info-subtle: #082f3d;
@@ -285,6 +288,36 @@ img, svg {
   border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
+.badge[class*="task-type-"] {
+  background: var(--info-subtle);
+  color: var(--info-text);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+}
+
+.form-field input.field-invalid,
+.form-field select.field-invalid,
+.form-field textarea.field-invalid,
+.inline-customer-card input.field-invalid,
+.form-field input.field-invalid:focus,
+.form-field select.field-invalid:focus,
+.form-field textarea.field-invalid:focus,
+.inline-customer-card input.field-invalid:focus {
+  border-color: var(--danger-border) !important;
+  box-shadow: 0 0 0 3px var(--danger-subtle) !important;
+}
+
+.form-field input.field-valid,
+.form-field select.field-valid,
+.form-field textarea.field-valid,
+.inline-customer-card input.field-valid,
+.form-field input.field-valid:focus,
+.form-field select.field-valid:focus,
+.form-field textarea.field-valid:focus,
+.inline-customer-card input.field-valid:focus {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 0 3px var(--success-subtle) !important;
+}
+
 .badge.role-admin {
   background: var(--fire-subtle);
   color: var(--fire-text);
@@ -301,8 +334,8 @@ img, svg {
 }
 
 .badge.inactive {
-  background: var(--bg-surface-hover);
-  color: var(--text-muted);
+  background: var(--danger-subtle);
+  color: var(--danger-text);
 }
 
 /* A table row that opens a detail view when clicked */

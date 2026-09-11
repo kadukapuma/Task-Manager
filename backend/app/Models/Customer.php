@@ -12,7 +12,15 @@ class Customer extends Model
         'company',
         'phone',
         'email',
+        'active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'active' => 'boolean',
+        ];
+    }
 
     public function tasks(): HasMany
     {

@@ -18,6 +18,7 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'task_type' => ['required', 'in:'.implode(',', Task::TASK_TYPES)],
             'description' => ['nullable', 'string'],
 
             'customer_id' => ['nullable', 'exists:customers,id'],

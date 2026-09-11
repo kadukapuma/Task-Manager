@@ -12,6 +12,8 @@ class Task extends Model
 {
     use SoftDeletes;
 
+    public const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance'];
+
     public const PRIORITIES = ['Normal', 'Urgent', 'Fire'];
 
     public const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone'];
@@ -20,6 +22,7 @@ class Task extends Model
 
     protected $fillable = [
         'title',
+        'task_type',
         'description',
         'customer_id',
         'assigned_staff_id',

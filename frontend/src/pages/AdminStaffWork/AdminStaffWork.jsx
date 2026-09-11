@@ -4,7 +4,7 @@ import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import Modal from '../../components/Modal/Modal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import StaffTimeAnalytics from '../../components/StaffTimeAnalytics/StaffTimeAnalytics'
-import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminStaffWork.css'
 
 const QUICK_STATUS_FILTERS = [
@@ -255,6 +255,7 @@ export default function AdminStaffWork() {
                   <thead>
                     <tr>
                       <th>Task Title</th>
+                      <th>Task Type</th>
                       <th>Staff</th>
                       <th>Customer</th>
                       <th>Priority</th>
@@ -267,6 +268,13 @@ export default function AdminStaffWork() {
                     {filteredTasks.map((t) => (
                       <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
                         <td style={{ fontWeight: 600 }}>{t.title}</td>
+                        <td>
+                          {t.task_type ? (
+                            <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          )}
+                        </td>
                         <td>{t.assigned_staff?.name ?? '—'}</td>
                         <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                         <td>
@@ -303,6 +311,9 @@ export default function AdminStaffWork() {
                       <span className="mdc-title">{t.title}</span>
                       <span className="mdc-subtitle">{t.assigned_staff?.name ?? 'Unassigned'} · {t.customer?.name ?? 'No customer'}</span>
                       <div className="mdc-badges">
+                        {t.task_type && (
+                          <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                        )}
                         <span className={`badge ${priorityClass(t.priority)}`}>{t.priority}</span>
                         <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                       </div>

@@ -5,7 +5,7 @@ import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
-import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminTasks.css'
 
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
@@ -15,6 +15,7 @@ const QUICK_STATUS_FILTERS = [
   { label: 'Finished', status: 'Done' },
 ]
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
+const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance']
 const PRIORITY_ICON = {
   Fire: 'fa-fire',
   Urgent: 'fa-bolt',
@@ -28,7 +29,7 @@ export default function AdminTasks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [filters, setFilters] = useState({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
+  const [filters, setFilters] = useState({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 })
 
@@ -78,7 +79,7 @@ export default function AdminTasks() {
 
   function resetFilters() {
     setPage(1)
-    setFilters({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
+    setFilters({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
   }
 
   async function confirmDelete() {
@@ -170,6 +171,20 @@ export default function AdminTasks() {
           </div>
 
           <div className="filter-item">
+            <label htmlFor="f_task_type">Task Type</label>
+            <select
+              id="f_task_type"
+              value={filters.task_type}
+              onChange={(e) => setFilter('task_type', e.target.value)}
+            >
+              <option value="">All Task Types</option>
+              {TASK_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
             <label htmlFor="f_staff">Assigned Staff</label>
             <select
               id="f_staff"
@@ -255,6 +270,7 @@ export default function AdminTasks() {
               <thead>
                 <tr>
                   <th>Task Title</th>
+                  <th>Task Type</th>
                   <th>Customer</th>
                   <th>Assigned Staff</th>
                   <th>Priority</th>
@@ -287,6 +303,13 @@ export default function AdminTasks() {
                           </span>
                         </span>
                       </div>
+                    </td>
+                    <td>
+                      {t.task_type ? (
+                        <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
                     </td>
                     <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                     <td>
@@ -359,6 +382,9 @@ export default function AdminTasks() {
                     {t.customer?.name ?? 'No customer'} · {t.assigned_staff?.name ?? 'Unassigned'}
                   </span>
                   <div className="mdc-badges">
+                    {t.task_type && (
+                      <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                    )}
                     <span className={`badge ${priorityClass(t.priority)}`}>
                       <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
                     </span>

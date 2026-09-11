@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
-import { formatDate, priorityClass, statusClass, statusColor } from '../../utils/format'
+import { formatDate, priorityClass, statusClass, statusColor, taskTypeClass } from '../../utils/format'
 import StaffPicker from '../StaffPicker/StaffPicker'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import BarChart from '../charts/BarChart'
@@ -153,6 +153,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Title</th>
+                      <th>Task Type</th>
                       <th>Priority</th>
                       <th>Status</th>
                       <th>Assigned Staff</th>
@@ -163,6 +164,13 @@ export default function AdminDashboard() {
                     {summary.open_urgent_tasks.map((t) => (
                       <tr key={t.id}>
                         <td style={{ fontWeight: 600 }}>{t.title}</td>
+                        <td>
+                          {t.task_type ? (
+                            <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          )}
+                        </td>
                         <td>
                           <span className={`badge ${priorityClass(t.priority)}`}>
                             <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
@@ -186,6 +194,9 @@ export default function AdminDashboard() {
                       <span className="mdc-title">{t.title}</span>
                       <span className="mdc-subtitle">{t.assigned_staff?.name ?? 'Unassigned'}</span>
                       <div className="mdc-badges">
+                        {t.task_type && (
+                          <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                        )}
                         <span className={`badge ${priorityClass(t.priority)}`}>
                           <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
                         </span>
@@ -195,6 +206,14 @@ export default function AdminDashboard() {
                   )}
                   renderDetail={(t) => (
                     <div className="detail-list">
+                      {t.task_type && (
+                        <div className="detail-row">
+                          <span className="detail-row-label">Task Type</span>
+                          <span className="detail-row-value">
+                            <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                          </span>
+                        </div>
+                      )}
                       <div className="detail-row">
                         <span className="detail-row-label">Priority</span>
                         <span className="detail-row-value">
@@ -254,6 +273,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr>
                       <th>Title</th>
+                      <th>Task Type</th>
                       <th>Customer</th>
                       <th>Priority</th>
                       <th>Due Date</th>
@@ -264,6 +284,13 @@ export default function AdminDashboard() {
                     {summary.unassigned_tasks.map((t) => (
                       <tr key={t.id}>
                         <td style={{ fontWeight: 600 }}>{t.title}</td>
+                        <td>
+                          {t.task_type ? (
+                            <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          )}
+                        </td>
                         <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                         <td>
                           <span className={`badge ${priorityClass(t.priority)}`}>
@@ -296,6 +323,9 @@ export default function AdminDashboard() {
                       <span className="mdc-title">{t.title}</span>
                       <span className="mdc-subtitle">{t.customer?.name ?? 'No customer'}</span>
                       <div className="mdc-badges">
+                        {t.task_type && (
+                          <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                        )}
                         <span className={`badge ${priorityClass(t.priority)}`}>
                           <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
                         </span>
@@ -304,6 +334,14 @@ export default function AdminDashboard() {
                   )}
                   renderDetail={(t) => (
                     <div className="detail-list">
+                      {t.task_type && (
+                        <div className="detail-row">
+                          <span className="detail-row-label">Task Type</span>
+                          <span className="detail-row-value">
+                            <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                          </span>
+                        </div>
+                      )}
                       <div className="detail-row">
                         <span className="detail-row-label">Customer</span>
                         <span className="detail-row-value">{t.customer?.name ?? '—'}</span>

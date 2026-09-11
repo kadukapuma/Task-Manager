@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
-import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusColor } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusColor, taskTypeClass } from '../../utils/format'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import BarChart from '../charts/BarChart'
 import './StaffDashboard.css'
@@ -248,6 +248,7 @@ export default function StaffDashboard() {
                   <thead>
                     <tr>
                       <th>Task Title</th>
+                      <th>Task Type</th>
                       <th>Customer</th>
                       <th>Priority</th>
                       <th>Est. Time</th>
@@ -262,6 +263,11 @@ export default function StaffDashboard() {
                       return (
                         <tr key={task.id}>
                           <td style={{ fontWeight: 600 }}>{task.title}</td>
+                          <td>
+                            {task.task_type ? (
+                              <span className={`badge ${taskTypeClass(task.task_type)}`}>{task.task_type}</span>
+                            ) : '—'}
+                          </td>
                           <td>{task.customer?.name ?? '—'}</td>
                           <td>
                             <span className={`badge ${priorityClass(task.priority)}`}>{task.priority}</span>
@@ -314,6 +320,9 @@ export default function StaffDashboard() {
                         <span className="mdc-title">{task.title}</span>
                         <span className="mdc-subtitle">{task.customer?.name ?? 'No customer'} · {formatDate(task.completed_at)}</span>
                         <div className="mdc-badges">
+                          {task.task_type && (
+                            <span className={`badge ${taskTypeClass(task.task_type)}`}>{task.task_type}</span>
+                          )}
                           <span className={`badge ${priorityClass(task.priority)}`}>{task.priority}</span>
                           <span
                             className="badge"
@@ -332,6 +341,14 @@ export default function StaffDashboard() {
                     const v = formatVariance(task.estimated_minutes, task.total_logged_secs)
                     return (
                       <div className="detail-list">
+                        {task.task_type && (
+                          <div className="detail-row">
+                            <span className="detail-row-label">Task Type</span>
+                            <span className="detail-row-value">
+                              <span className={`badge ${taskTypeClass(task.task_type)}`}>{task.task_type}</span>
+                            </span>
+                          </div>
+                        )}
                         <div className="detail-row">
                           <span className="detail-row-label">Customer</span>
                           <span className="detail-row-value">{task.customer?.name ?? '—'}</span>

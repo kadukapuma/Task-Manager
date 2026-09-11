@@ -5,6 +5,7 @@ import StaffPicker from '../StaffPicker/StaffPicker'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 import './TaskForm.css'
 
+const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance']
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
 const FREQUENCIES = ['Daily', 'Weekly', 'Monthly']
@@ -15,6 +16,7 @@ const MAX_FILES = 5
 function initialState(task) {
   return {
     title: task?.title ?? '',
+    task_type: task?.task_type ?? '',
     description: task?.description ?? '',
     customer_id: task?.customer_id ?? '',
     assigned_staff_id: task?.assigned_staff_id ?? '',
@@ -41,6 +43,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
   const [newCustomer, setNewCustomer] = useState({ name: '', company: '', phone: '', email: '' })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [touched, setTouched] = useState({})
 
   const [pendingFiles, setPendingFiles] = useState([])
   const [existingAttachments, setExistingAttachments] = useState(task?.attachments ?? [])
@@ -63,6 +66,15 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
+  }
+
+  function touch(field) {
+    setTouched((t) => ({ ...t, [field]: true }))
+  }
+
+  function fieldClass(field, isValid) {
+    if (!touched[field]) return ''
+    return isValid ? 'field-valid' : 'field-invalid'
   }
 
   function handleFilesSelected(e) {
@@ -110,9 +122,14 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    setTouched((t) => ({ ...t, title: true, task_type: true, repeat_frequency: true, cannot_complete_reason: true, new_customer_name: true }))
 
     if (!form.title.trim()) {
       setError('Title is required.')
+      return
+    }
+    if (!form.task_type) {
+      setError('Task type is required.')
       return
     }
     if (creatingCustomer && !newCustomer.name.trim()) {
@@ -134,6 +151,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
     const payload = {
       title: form.title,
+      task_type: form.task_type,
       description: form.description || null,
       assigned_staff_id: form.assigned_staff_id || null,
       priority: form.priority,
@@ -191,11 +209,32 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
         <label htmlFor="task_title">Task Title *</label>
         <input
           id="task_title"
+          className={fieldClass('title', form.title.trim() !== '')}
           placeholder="e.g. Server maintenance, Client follow-up"
           value={form.title}
           onChange={(e) => set('title', e.target.value)}
+          onBlur={() => touch('title')}
           required
         />
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="task_type">Task Type *</label>
+        <select
+          id="task_type"
+          className={fieldClass('task_type', Boolean(form.task_type))}
+          value={form.task_type}
+          onChange={(e) => set('task_type', e.target.value)}
+          onBlur={() => touch('task_type')}
+          required
+        >
+          <option value="" disabled>Select task type…</option>
+          {TASK_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-field">
@@ -270,11 +309,14 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
               onChange={(e) => set('customer_id', e.target.value)}
             >
               <option value="">No Customer / Internal Task</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} {c.company ? `(${c.company})` : ''}
-                </option>
-              ))}
+              {customers
+                .filter((c) => c.active !== false || c.id === form.customer_id)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} {c.company ? `(${c.company})` : ''}
+                    {c.active === false ? ' (Inactive)' : ''}
+                  </option>
+                ))}
             </select>
             <button
               type="button"
@@ -300,9 +342,11 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
             </div>
             <div className="form-grid-2col">
               <input
+                className={fieldClass('new_customer_name', newCustomer.name.trim() !== '')}
                 placeholder="Customer Name *"
                 value={newCustomer.name}
                 onChange={(e) => setNewCustomer((c) => ({ ...c, name: e.target.value }))}
+                onBlur={() => touch('new_customer_name')}
                 required
               />
               <input
@@ -430,10 +474,12 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
               <label htmlFor="task_cannot_complete_reason">Reason This Task Is Undone *</label>
               <textarea
                 id="task_cannot_complete_reason"
+                className={fieldClass('cannot_complete_reason', form.cannot_complete_reason.trim() !== '')}
                 rows={3}
                 placeholder="Explain why this task couldn't be completed…"
                 value={form.cannot_complete_reason}
                 onChange={(e) => set('cannot_complete_reason', e.target.value)}
+                onBlur={() => touch('cannot_complete_reason')}
                 required
               />
             </div>
@@ -453,8 +499,10 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
               <label htmlFor="task_freq">Repeat Frequency</label>
               <select
                 id="task_freq"
+                className={fieldClass('repeat_frequency', Boolean(form.repeat_frequency))}
                 value={form.repeat_frequency}
                 onChange={(e) => set('repeat_frequency', e.target.value)}
+                onBlur={() => touch('repeat_frequency')}
               >
                 <option value="">Select frequency…</option>
                 {FREQUENCIES.map((f) => (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
-import { formatDate, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminDeletedTasks.css'
 
 const PRIORITY_ICON = {
@@ -97,6 +97,7 @@ export default function AdminDeletedTasks() {
               <thead>
                 <tr>
                   <th>Task Title</th>
+                  <th>Task Type</th>
                   <th>Customer</th>
                   <th>Assigned Staff</th>
                   <th>Priority</th>
@@ -109,6 +110,13 @@ export default function AdminDeletedTasks() {
                 {tasks.map((t) => (
                   <tr key={t.id}>
                     <td style={{ fontWeight: 600 }}>{t.title}</td>
+                    <td>
+                      {t.task_type ? (
+                        <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
+                    </td>
                     <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                     <td>{t.assigned_staff?.name ?? <span className="badge inactive">Unassigned</span>}</td>
                     <td>
@@ -158,6 +166,9 @@ export default function AdminDeletedTasks() {
                     {t.customer?.name ?? 'No customer'} · {t.assigned_staff?.name ?? 'Unassigned'}
                   </span>
                   <div className="mdc-badges">
+                    {t.task_type && (
+                      <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                    )}
                     <span className={`badge ${priorityClass(t.priority)}`}>{t.priority}</span>
                     <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                   </div>
@@ -165,6 +176,14 @@ export default function AdminDeletedTasks() {
               )}
               renderDetail={(t, close) => (
                 <div className="detail-list">
+                  {t.task_type && (
+                    <div className="detail-row">
+                      <span className="detail-row-label">Task Type</span>
+                      <span className="detail-row-value">
+                        <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                      </span>
+                    </div>
+                  )}
                   <div className="detail-row">
                     <span className="detail-row-label">Customer</span>
                     <span className="detail-row-value">{t.customer?.name ?? '—'}</span>
