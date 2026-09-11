@@ -283,7 +283,11 @@ export default function AdminTasks() {
               </thead>
               <tbody>
                 {tasks.map((t) => (
-                  <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
+                  <tr
+                    key={t.id}
+                    className={`clickable-row ${t.priority === 'Fire' ? 'row-fire' : ''}`}
+                    onClick={() => setViewingTask(t)}
+                  >
                     <td>
                       <div className="table-cell-lead">
                         <span
@@ -318,9 +322,15 @@ export default function AdminTasks() {
                       )}
                     </td>
                     <td>
-                      <span className={`badge ${priorityClass(t.priority)}`}>
-                        <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
-                      </span>
+                      {t.priority === 'Fire' ? (
+                        <span className="fire-indicator">
+                          <span className="flame" aria-hidden="true" /> {t.priority}
+                        </span>
+                      ) : (
+                        <span className={`badge ${priorityClass(t.priority)}`}>
+                          <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <span
@@ -385,9 +395,15 @@ export default function AdminTasks() {
                     {t.task_type && (
                       <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
                     )}
-                    <span className={`badge ${priorityClass(t.priority)}`}>
-                      <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
-                    </span>
+                    {t.priority === 'Fire' ? (
+                      <span className="fire-indicator">
+                        <span className="flame" aria-hidden="true" /> {t.priority}
+                      </span>
+                    ) : (
+                      <span className={`badge ${priorityClass(t.priority)}`}>
+                        <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
+                      </span>
+                    )}
                     <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                   </div>
                 </>

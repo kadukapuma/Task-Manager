@@ -172,9 +172,15 @@ export default function AdminDashboard() {
                           )}
                         </td>
                         <td>
-                          <span className={`badge ${priorityClass(t.priority)}`}>
-                            <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
-                          </span>
+                          {t.priority === 'Fire' ? (
+                            <span className="fire-indicator">
+                              <span className="flame" aria-hidden="true" /> {t.priority}
+                            </span>
+                          ) : (
+                            <span className={`badge ${priorityClass(t.priority)}`}>
+                              <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
+                            </span>
+                          )}
                         </td>
                         <td>
                           <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
@@ -197,9 +203,15 @@ export default function AdminDashboard() {
                         {t.task_type && (
                           <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
                         )}
-                        <span className={`badge ${priorityClass(t.priority)}`}>
-                          <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
-                        </span>
+                        {t.priority === 'Fire' ? (
+                          <span className="fire-indicator">
+                            <span className="flame" aria-hidden="true" /> {t.priority}
+                          </span>
+                        ) : (
+                          <span className={`badge ${priorityClass(t.priority)}`}>
+                            <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
+                          </span>
+                        )}
                         <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                       </div>
                     </>
@@ -217,9 +229,15 @@ export default function AdminDashboard() {
                       <div className="detail-row">
                         <span className="detail-row-label">Priority</span>
                         <span className="detail-row-value">
-                          <span className={`badge ${priorityClass(t.priority)}`}>
-                            <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
-                          </span>
+                          {t.priority === 'Fire' ? (
+                            <span className="fire-indicator">
+                              <span className="flame" aria-hidden="true" /> {t.priority}
+                            </span>
+                          ) : (
+                            <span className={`badge ${priorityClass(t.priority)}`}>
+                              <i className={`fa-solid ${t.priority === 'Fire' ? 'fa-fire' : 'fa-bolt'}`} aria-hidden="true" /> {t.priority}
+                            </span>
+                          )}
                         </span>
                       </div>
                       <div className="detail-row">
