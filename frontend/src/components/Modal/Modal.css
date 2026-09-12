@@ -34,6 +34,10 @@
   max-width: 720px;
 }
 
+.modal-dialog.modal-xl {
+  max-width: 880px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

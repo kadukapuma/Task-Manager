@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                         <td>
                           {t.priority === 'Fire' ? (
                             <span className="fire-indicator">
-                              <span className="flame" aria-hidden="true" /> {t.priority}
+                              <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
                             </span>
                           ) : (
                             <span className={`badge ${priorityClass(t.priority)}`}>
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                         )}
                         {t.priority === 'Fire' ? (
                           <span className="fire-indicator">
-                            <span className="flame" aria-hidden="true" /> {t.priority}
+                            <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
                           </span>
                         ) : (
                           <span className={`badge ${priorityClass(t.priority)}`}>
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
                         <span className="detail-row-value">
                           {t.priority === 'Fire' ? (
                             <span className="fire-indicator">
-                              <span className="flame" aria-hidden="true" /> {t.priority}
+                              <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
                             </span>
                           ) : (
                             <span className={`badge ${priorityClass(t.priority)}`}>

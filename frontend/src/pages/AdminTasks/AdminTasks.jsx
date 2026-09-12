@@ -324,7 +324,7 @@ export default function AdminTasks() {
                     <td>
                       {t.priority === 'Fire' ? (
                         <span className="fire-indicator">
-                          <span className="flame" aria-hidden="true" /> {t.priority}
+                          <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
                         </span>
                       ) : (
                         <span className={`badge ${priorityClass(t.priority)}`}>
@@ -397,7 +397,7 @@ export default function AdminTasks() {
                     )}
                     {t.priority === 'Fire' ? (
                       <span className="fire-indicator">
-                        <span className="flame" aria-hidden="true" /> {t.priority}
+                        <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
                       </span>
                     ) : (
                       <span className={`badge ${priorityClass(t.priority)}`}>
@@ -479,7 +479,7 @@ export default function AdminTasks() {
         onClose={() => setShowCreateModal(false)}
         title="Create New Task"
         subtitle="Specify task details, assignment, and priority."
-        size="lg"
+        size="xl"
       >
         <TaskForm
           onSaved={handleCreated}
@@ -493,7 +493,7 @@ export default function AdminTasks() {
         onClose={() => setEditingTask(null)}
         title={`Edit Task #${editingTask?.id || ''}`}
         subtitle="Modify task status, reassign staff, or update priority."
-        size="lg"
+        size="xl"
       >
         {editingTask && (
           <TaskForm

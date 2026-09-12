@@ -31,7 +31,7 @@ export default function StaffHome() {
         onClose={() => setShowCreateModal(false)}
         title="Create New Task"
         subtitle="Your task goes into the unassigned queue -- only an admin can assign it to someone."
-        size="lg"
+        size="xl"
       >
         <TaskForm onSaved={handleCreated} onCancel={() => setShowCreateModal(false)} />
       </Modal>

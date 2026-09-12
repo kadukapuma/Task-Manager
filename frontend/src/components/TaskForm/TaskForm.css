@@ -10,6 +10,29 @@
   gap: 1rem;
 }
 
+/* Two-column layout for the wider Create/Edit Task modal: title through
+   attachments on the left, customer through scheduling on the right. */
+.task-form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.task-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .task-form-columns {
+    grid-template-columns: 1fr;
+    gap: 1.125rem;
+  }
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
@@ -192,6 +215,54 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* Repeat Frequency: a horizontal segmented radio-button group instead of
+   a dropdown -- each option is a toggle-able pill, only one active. */
+.freq-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.freq-option {
+  flex: 1;
+  min-width: 84px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.freq-option:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.freq-option.is-selected {
+  background: var(--primary-subtle);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.freq-option-group.field-invalid .freq-option:not(.is-selected) {
+  border-color: var(--danger-border);
+}
+
+.freq-option-group.field-valid .freq-option.is-selected {
+  border-color: var(--success);
+  box-shadow: 0 0 0 3px var(--success-subtle);
+}
+
+@media (max-width: 768px) {
+  .freq-option {
+    min-height: 44px;
+  }
 }
 
 .form-toggle-row {
