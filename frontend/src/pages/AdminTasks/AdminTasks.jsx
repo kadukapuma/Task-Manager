@@ -479,7 +479,7 @@ export default function AdminTasks() {
         onClose={() => setShowCreateModal(false)}
         title="Create New Task"
         subtitle="Specify task details, assignment, and priority."
-        size="xl"
+        size="2xl"
       >
         <TaskForm
           onSaved={handleCreated}
@@ -493,7 +493,7 @@ export default function AdminTasks() {
         onClose={() => setEditingTask(null)}
         title={`Edit Task #${editingTask?.id || ''}`}
         subtitle="Modify task status, reassign staff, or update priority."
-        size="xl"
+        size="2xl"
       >
         {editingTask && (
           <TaskForm

@@ -49,6 +49,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
   const [existingAttachments, setExistingAttachments] = useState(task?.attachments ?? [])
   const [fileError, setFileError] = useState('')
   const [deletingAttachmentId, setDeletingAttachmentId] = useState(null)
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false)
 
   useEffect(() => {
     api.get('/customers').then(({ data }) => setCustomers(data.data)).catch(() => {})
@@ -77,9 +78,9 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
     return isValid ? 'field-valid' : 'field-invalid'
   }
 
-  function handleFilesSelected(e) {
-    const files = Array.from(e.target.files || [])
-    e.target.value = ''
+  function addFiles(fileList) {
+    const files = Array.from(fileList || [])
+    if (files.length === 0) return
     setFileError('')
 
     const total = pendingFiles.length + existingAttachments.length + files.length
@@ -100,6 +101,27 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
     }
 
     setPendingFiles((prev) => [...prev, ...files])
+  }
+
+  function handleFilesSelected(e) {
+    addFiles(e.target.files)
+    e.target.value = ''
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault()
+    setIsDraggingFiles(true)
+  }
+
+  function handleDragLeave(e) {
+    e.preventDefault()
+    setIsDraggingFiles(false)
+  }
+
+  function handleDrop(e) {
+    e.preventDefault()
+    setIsDraggingFiles(false)
+    addFiles(e.dataTransfer.files)
   }
 
   function removePendingFile(index) {
@@ -252,13 +274,25 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
           <div className="form-field">
             <label htmlFor="task_files">Attachments (images or PDF, up to 10MB each)</label>
-            <input
-              id="task_files"
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-              multiple
-              onChange={handleFilesSelected}
-            />
+            <label
+              htmlFor="task_files"
+              className={`attachment-dropzone ${isDraggingFiles ? 'attachment-dropzone-active' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <i className="fa-solid fa-cloud-arrow-up" aria-hidden="true" />
+              <span>
+                <strong>Click to browse</strong> or drag &amp; drop files here
+              </span>
+              <input
+                id="task_files"
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                multiple
+                onChange={handleFilesSelected}
+              />
+            </label>
             {fileError && (
               <p style={{ fontSize: '0.75rem', color: 'var(--danger-text)', margin: 0 }}>{fileError}</p>
             )}
