@@ -5,7 +5,7 @@ import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
-import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminTasks.css'
 
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
@@ -15,6 +15,7 @@ const QUICK_STATUS_FILTERS = [
   { label: 'Finished', status: 'Done' },
 ]
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
+const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance']
 const PRIORITY_ICON = {
   Fire: 'fa-fire',
   Urgent: 'fa-bolt',
@@ -28,7 +29,7 @@ export default function AdminTasks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [filters, setFilters] = useState({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
+  const [filters, setFilters] = useState({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 })
 
@@ -78,7 +79,7 @@ export default function AdminTasks() {
 
   function resetFilters() {
     setPage(1)
-    setFilters({ status: '', priority: '', staff_id: '', customer_id: '', from: '', to: '' })
+    setFilters({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
   }
 
   async function confirmDelete() {
@@ -170,6 +171,20 @@ export default function AdminTasks() {
           </div>
 
           <div className="filter-item">
+            <label htmlFor="f_task_type">Task Type</label>
+            <select
+              id="f_task_type"
+              value={filters.task_type}
+              onChange={(e) => setFilter('task_type', e.target.value)}
+            >
+              <option value="">All Task Types</option>
+              {TASK_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
             <label htmlFor="f_staff">Assigned Staff</label>
             <select
               id="f_staff"
@@ -255,6 +270,7 @@ export default function AdminTasks() {
               <thead>
                 <tr>
                   <th>Task Title</th>
+                  <th>Task Type</th>
                   <th>Customer</th>
                   <th>Assigned Staff</th>
                   <th>Priority</th>
@@ -267,7 +283,11 @@ export default function AdminTasks() {
               </thead>
               <tbody>
                 {tasks.map((t) => (
-                  <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
+                  <tr
+                    key={t.id}
+                    className={`clickable-row ${t.priority === 'Fire' ? 'row-fire' : ''}`}
+                    onClick={() => setViewingTask(t)}
+                  >
                     <td>
                       <div className="table-cell-lead">
                         <span
@@ -288,6 +308,13 @@ export default function AdminTasks() {
                         </span>
                       </div>
                     </td>
+                    <td>
+                      {t.task_type ? (
+                        <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
+                    </td>
                     <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                     <td>
                       {t.assigned_staff?.name ?? (
@@ -295,9 +322,15 @@ export default function AdminTasks() {
                       )}
                     </td>
                     <td>
-                      <span className={`badge ${priorityClass(t.priority)}`}>
-                        <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
-                      </span>
+                      {t.priority === 'Fire' ? (
+                        <span className="fire-indicator">
+                          <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
+                        </span>
+                      ) : (
+                        <span className={`badge ${priorityClass(t.priority)}`}>
+                          <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <span
@@ -359,9 +392,18 @@ export default function AdminTasks() {
                     {t.customer?.name ?? 'No customer'} · {t.assigned_staff?.name ?? 'Unassigned'}
                   </span>
                   <div className="mdc-badges">
-                    <span className={`badge ${priorityClass(t.priority)}`}>
-                      <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
-                    </span>
+                    {t.task_type && (
+                      <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                    )}
+                    {t.priority === 'Fire' ? (
+                      <span className="fire-indicator">
+                        <span className="flame" aria-hidden="true"><span className="flame-spark" /><span className="flame-spark" /></span> {t.priority}
+                      </span>
+                    ) : (
+                      <span className={`badge ${priorityClass(t.priority)}`}>
+                        <i className={`fa-solid ${PRIORITY_ICON[t.priority] || 'fa-thumbtack'}`} aria-hidden="true" /> {t.priority}
+                      </span>
+                    )}
                     <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                   </div>
                 </>
@@ -437,7 +479,7 @@ export default function AdminTasks() {
         onClose={() => setShowCreateModal(false)}
         title="Create New Task"
         subtitle="Specify task details, assignment, and priority."
-        size="lg"
+        size="2xl"
       >
         <TaskForm
           onSaved={handleCreated}
@@ -451,7 +493,7 @@ export default function AdminTasks() {
         onClose={() => setEditingTask(null)}
         title={`Edit Task #${editingTask?.id || ''}`}
         subtitle="Modify task status, reassign staff, or update priority."
-        size="lg"
+        size="2xl"
       >
         {editingTask && (
           <TaskForm

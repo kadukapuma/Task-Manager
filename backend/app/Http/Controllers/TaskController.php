@@ -29,6 +29,7 @@ class TaskController extends Controller
         $paginator = $this->baseQuery()
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('priority'), fn ($q, $priority) => $q->where('priority', $priority))
+            ->when($request->query('task_type'), fn ($q, $taskType) => $q->where('task_type', $taskType))
             ->when($request->query('staff_id'), fn ($q, $staffId) => $q->where('assigned_staff_id', $staffId))
             ->when($request->query('customer_id'), fn ($q, $customerId) => $q->where('customer_id', $customerId))
             ->when($request->query('from'), fn ($q, $from) => $q->whereDate('created_at', '>=', $from))
@@ -131,6 +132,15 @@ class TaskController extends Controller
 
         if (! in_array($task->status, ['Pending', 'Paused'], true)) {
             return $this->ok(null, "Task can't be started from its current status.", Response::HTTP_CONFLICT);
+        }
+
+        $hasActiveTask = Task::where('assigned_staff_id', $task->assigned_staff_id)
+            ->where('status', 'In Progress')
+            ->where('id', '!=', $task->id)
+            ->exists();
+
+        if ($hasActiveTask) {
+            return $this->ok(null, 'You already have an active task in progress. Please pause or complete it before starting another.', Response::HTTP_CONFLICT);
         }
 
         TimeLog::create([

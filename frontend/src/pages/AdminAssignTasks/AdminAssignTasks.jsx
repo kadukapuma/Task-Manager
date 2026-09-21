@@ -4,7 +4,7 @@ import StaffPicker from '../../components/StaffPicker/StaffPicker'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import Modal from '../../components/Modal/Modal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
-import { formatDate, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminAssignTasks.css'
 
 const PRIORITY_ICON = {
@@ -105,6 +105,7 @@ export default function AdminAssignTasks() {
               <thead>
                 <tr>
                   <th>Task Title</th>
+                  <th>Task Type</th>
                   <th>Customer</th>
                   <th>Priority</th>
                   <th>Status</th>
@@ -116,6 +117,13 @@ export default function AdminAssignTasks() {
                 {visibleTasks.map((t) => (
                   <tr key={t.id} className="clickable-row" onClick={() => setViewingTask(t)}>
                     <td style={{ fontWeight: 600 }}>{t.title}</td>
+                    <td>
+                      {t.task_type ? (
+                        <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
+                    </td>
                     <td>{t.customer?.name ?? <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                     <td>
                       <span className={`badge ${priorityClass(t.priority)}`}>
@@ -154,6 +162,9 @@ export default function AdminAssignTasks() {
                     {t.customer?.name ?? 'No customer'} · {t.assigned_staff?.name ?? 'Unassigned'}
                   </span>
                   <div className="mdc-badges">
+                    {t.task_type && (
+                      <span className={`badge ${taskTypeClass(t.task_type)}`}>{t.task_type}</span>
+                    )}
                     <span className={`badge ${priorityClass(t.priority)}`}>{t.priority}</span>
                     <span className={`badge ${statusClass(t.status)}`}>{t.status}</span>
                   </div>
