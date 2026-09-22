@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react'
-import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './TaskCard.css'
 
 const PRIORITY_ICON = {
@@ -47,6 +47,9 @@ export default function TaskCard({
         </div>
 
         <div className="task-card-badges">
+          {task.task_type && (
+            <span className={`badge ${taskTypeClass(task.task_type)}`}>{task.task_type}</span>
+          )}
           <span className={`badge ${priorityClass(task.priority)}`}>
             <i className={`fa-solid ${priorityIcon}`} aria-hidden="true" /> {task.priority}
           </span>

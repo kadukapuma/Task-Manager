@@ -51,6 +51,10 @@ export function statusClass(status) {
   return `status-${(status ?? 'pending').toLowerCase().replace(/\s+/g, '-')}`
 }
 
+export function taskTypeClass(taskType) {
+  return `task-type-${(taskType ?? '').toLowerCase().replace(/\s+/g, '-')}`
+}
+
 const STATUS_COLORS = {
   Pending: 'var(--text-muted)',
   'In Progress': 'var(--info)',

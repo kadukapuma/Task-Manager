@@ -1,4 +1,4 @@
-import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass } from '../../utils/format'
+import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 
 /**
@@ -10,6 +10,15 @@ import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/atta
 export default function TaskDetailView({ task, onEdit, onDelete, children }) {
   return (
     <div className="detail-list">
+      {task.task_type && (
+        <div className="detail-row">
+          <span className="detail-row-label">Task Type</span>
+          <span className="detail-row-value">
+            <span className={`badge ${taskTypeClass(task.task_type)}`}>{task.task_type}</span>
+          </span>
+        </div>
+      )}
+
       <div className="detail-row">
         <span className="detail-row-label">Description</span>
         <span className="detail-row-value detail-row-multiline">

@@ -19,6 +19,7 @@ class UpdateCustomerRequest extends FormRequest
             'company' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
+            'active' => ['sometimes', 'boolean'],
         ];
     }
 }

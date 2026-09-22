@@ -10,10 +10,12 @@ export default function AdminCustomers() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   // Modal states for popup creation and editing
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState(null)
+  const [pendingToggleId, setPendingToggleId] = useState(null)
 
   function load() {
     setLoading(true)
@@ -39,7 +41,22 @@ export default function AdminCustomers() {
     setEditingCustomer(null)
   }
 
+  async function handleToggleActive(customer) {
+    setPendingToggleId(customer.id)
+    try {
+      const { data } = await api.patch(`/customers/${customer.id}`, { active: !customer.active })
+      setCustomers((prev) => prev.map((c) => (c.id === customer.id ? data.data : c)))
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Could not update customer status.'))
+    } finally {
+      setPendingToggleId(null)
+    }
+  }
+
   const filteredCustomers = customers.filter((c) => {
+    if (statusFilter === 'active' && c.active === false) return false
+    if (statusFilter === 'inactive' && c.active !== false) return false
+
     if (!search.trim()) return true
     const term = search.toLowerCase()
     return (
@@ -65,6 +82,16 @@ export default function AdminCustomers() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <select
+            className="customer-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter by status"
+          >
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
           <button
             type="button"
             className="btn-primary-add"
@@ -93,7 +120,9 @@ export default function AdminCustomers() {
               <div className="task-empty-icon"><i className="fa-solid fa-address-book" aria-hidden="true" /></div>
               <div className="task-empty-title">No customers found</div>
               <p className="task-empty-desc">
-                {search ? 'No clients match your search query.' : 'Click "+ Add Customer" to add your first customer.'}
+                {search || statusFilter !== 'all'
+                  ? 'No clients match your search or filter.'
+                  : 'Click "+ Add Customer" to add your first customer.'}
               </p>
             </div>
           ) : (
@@ -104,12 +133,13 @@ export default function AdminCustomers() {
                   <th>Company</th>
                   <th>Phone Number</th>
                   <th>Email Address</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCustomers.map((c) => (
-                  <tr key={c.id}>
+                  <tr key={c.id} className={c.active === false ? 'customer-row-inactive' : ''}>
                     <td style={{ fontWeight: 600 }}>{c.name}</td>
                     <td>{c.company || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
                     <td>{c.phone || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
@@ -123,13 +153,28 @@ export default function AdminCustomers() {
                       )}
                     </td>
                     <td>
-                      <button
-                        type="button"
-                        className="btn-table-action"
-                        onClick={() => setEditingCustomer(c)}
-                      >
-                        Edit
-                      </button>
+                      <span className={`badge ${c.active !== false ? 'active' : 'inactive'}`}>
+                        {c.active !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        <button
+                          type="button"
+                          className="btn-table-action"
+                          onClick={() => setEditingCustomer(c)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-table-action"
+                          onClick={() => handleToggleActive(c)}
+                          disabled={pendingToggleId === c.id}
+                        >
+                          {c.active !== false ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -146,6 +191,9 @@ export default function AdminCustomers() {
                 <>
                   <span className="mdc-title">{c.name}</span>
                   <span className="mdc-subtitle">{c.company || 'No company'}</span>
+                  <span className={`badge ${c.active !== false ? 'active' : 'inactive'}`}>
+                    {c.active !== false ? 'Active' : 'Inactive'}
+                  </span>
                 </>
               )}
               renderDetail={(c, close) => (
@@ -170,6 +218,14 @@ export default function AdminCustomers() {
                       )}
                     </span>
                   </div>
+                  <div className="detail-row">
+                    <span className="detail-row-label">Status</span>
+                    <span className="detail-row-value">
+                      <span className={`badge ${c.active !== false ? 'active' : 'inactive'}`}>
+                        {c.active !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </span>
+                  </div>
                   <div className="detail-actions">
                     <button
                       type="button"
@@ -180,6 +236,14 @@ export default function AdminCustomers() {
                       }}
                     >
                       Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-table-action"
+                      onClick={() => handleToggleActive(c)}
+                      disabled={pendingToggleId === c.id}
+                    >
+                      {c.active !== false ? 'Deactivate' : 'Activate'}
                     </button>
                   </div>
                 </div>

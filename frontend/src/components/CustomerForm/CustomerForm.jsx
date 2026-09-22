@@ -12,14 +12,25 @@ export default function CustomerForm({
   const [form, setForm] = useState({ ...emptyCustomer, ...initial })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [touched, setTouched] = useState({})
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
+  function touch(field) {
+    setTouched((t) => ({ ...t, [field]: true }))
+  }
+
+  function fieldClass(field, isValid) {
+    if (!touched[field]) return ''
+    return isValid ? 'field-valid' : 'field-invalid'
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    setTouched((t) => ({ ...t, name: true }))
 
     if (!form.name.trim()) {
       setError('Customer name is required.')
@@ -48,9 +59,11 @@ export default function CustomerForm({
         <label htmlFor="c_name">Full Name *</label>
         <input
           id="c_name"
+          className={fieldClass('name', form.name.trim() !== '')}
           placeholder="e.g. Acme Corp or John Doe"
           value={form.name}
           onChange={(e) => set('name', e.target.value)}
+          onBlur={() => touch('name')}
           required
         />
       </div>

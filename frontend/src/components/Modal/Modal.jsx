@@ -23,7 +23,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, size = 'md', c
   if (!isOpen) return null
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div className="modal-backdrop">
       <div
         className={`modal-dialog modal-${size}`}
         onClick={(e) => e.stopPropagation()}
