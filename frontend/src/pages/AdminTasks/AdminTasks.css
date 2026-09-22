@@ -152,3 +152,18 @@
   line-height: 1.35;
 }
 
+
+/* Keep native calendar popups in sync with the page theme. */
+.admin-tasks-container input[type='date'] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] .admin-tasks-container input[type='date'] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .admin-tasks-container input[type='date'] {
+    color-scheme: dark;
+  }
+}
