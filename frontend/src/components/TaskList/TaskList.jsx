@@ -16,6 +16,10 @@ export default function TaskList({ refreshSignal, onChange }) {
   const [reasonError, setReasonError] = useState('')
   const [viewingTask, setViewingTask] = useState(null)
 
+  const [completingTask, setCompletingTask] = useState(null)
+  const [completionNotes, setCompletionNotes] = useState('')
+  const [completionError, setCompletionError] = useState('')
+
   function load() {
     setLoading(true)
     setError('')
@@ -47,6 +51,29 @@ export default function TaskList({ refreshSignal, onChange }) {
     setReason('')
     setReasonError('')
     setCannotCompleteTask(task)
+  }
+
+  function openComplete(task) {
+    setCompletionNotes('')
+    setCompletionError('')
+    setCompletingTask(task)
+  }
+
+  async function submitComplete(e) {
+    e.preventDefault()
+
+    setBusyId(completingTask.id)
+    setCompletionError('')
+    try {
+      await api.post(`/tasks/${completingTask.id}/complete`, { notes: completionNotes || null })
+      setCompletingTask(null)
+      load()
+      onChange?.()
+    } catch (err) {
+      setCompletionError(apiErrorMessage(err, 'Could not update the task.'))
+    } finally {
+      setBusyId(null)
+    }
   }
 
   async function submitCannotComplete(e) {
@@ -107,7 +134,7 @@ export default function TaskList({ refreshSignal, onChange }) {
               busy={busyId === task.id}
               onStart={(t) => runAction(t, 'start')}
               onPause={(t) => runAction(t, 'pause')}
-              onComplete={(t) => runAction(t, 'complete')}
+              onComplete={openComplete}
               onCannotComplete={openCannotComplete}
               onView={setViewingTask}
             />
@@ -148,6 +175,43 @@ export default function TaskList({ refreshSignal, onChange }) {
             </button>
             <button type="submit" className="btn-modal-submit btn-modal-danger" disabled={busyId === cannotCompleteTask?.id}>
               {busyId === cannotCompleteTask?.id ? 'Saving…' : 'Submit'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(completingTask)}
+        onClose={() => setCompletingTask(null)}
+        title="Mark Task Done"
+        subtitle={completingTask ? `"${completingTask.title}" -- add a note if you'd like (optional).` : ''}
+        size="sm"
+      >
+        <form className="task-form-modern" onSubmit={submitComplete}>
+          {completionError && (
+            <div className="alert-error">
+              <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {completionError}
+            </div>
+          )}
+
+          <div className="form-field">
+            <label htmlFor="completion_notes">Completion Notes</label>
+            <textarea
+              id="completion_notes"
+              rows={4}
+              autoFocus
+              placeholder="Anything worth noting about how this was completed… (optional)"
+              value={completionNotes}
+              onChange={(e) => setCompletionNotes(e.target.value)}
+            />
+          </div>
+
+          <div className="modal-form-actions">
+            <button type="button" className="btn-modal-cancel" onClick={() => setCompletingTask(null)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-modal-submit" disabled={busyId === completingTask?.id}>
+              {busyId === completingTask?.id ? 'Saving…' : 'Mark Done'}
             </button>
           </div>
         </form>

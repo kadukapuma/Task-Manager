@@ -162,13 +162,16 @@ class DashboardController extends Controller
                 ->where('status', 'Done')
                 ->when($from, fn ($q) => $q->whereDate('completed_at', '>=', $from))
                 ->when($to, fn ($q) => $q->whereDate('completed_at', '<=', $to))
+                ->with('customer')
                 ->withSum('timeLogs as total_logged_secs', 'duration_secs')
+                ->orderByDesc('completed_at')
                 ->get();
 
             $totalEstimatedMinutes = (int) $completedTasks->sum('estimated_minutes');
             $completedActualSecs = (int) $completedTasks->sum('total_logged_secs');
 
             $pendingCount = Task::where('assigned_staff_id', $staff->id)->where('status', 'Pending')->count();
+            $inProgressCount = Task::where('assigned_staff_id', $staff->id)->where('status', 'In Progress')->count();
             $pausedCount = Task::where('assigned_staff_id', $staff->id)->where('status', 'Paused')->count();
             $undoneCount = Task::where('assigned_staff_id', $staff->id)->where('status', 'Undone')->count();
 
@@ -179,10 +182,12 @@ class DashboardController extends Controller
                 'days_worked' => $daysWorked,
                 'completed_tasks_count' => $completedTasks->count(),
                 'pending_tasks_count' => $pendingCount,
+                'in_progress_tasks_count' => $inProgressCount,
                 'paused_tasks_count' => $pausedCount,
                 'undone_tasks_count' => $undoneCount,
                 'total_estimated_minutes' => $totalEstimatedMinutes,
                 'completed_actual_secs' => $completedActualSecs,
+                'completed_tasks' => $completedTasks->values(),
             ];
         })->all();
     }

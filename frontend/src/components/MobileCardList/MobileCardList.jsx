@@ -14,6 +14,7 @@ export default function MobileCardList({
   renderDetail,
   detailTitle,
   detailSubtitle,
+  detailSize = 'sm',
 }) {
   const [selected, setSelected] = useState(null)
 
@@ -38,7 +39,7 @@ export default function MobileCardList({
         onClose={() => setSelected(null)}
         title={selected ? (typeof detailTitle === 'function' ? detailTitle(selected) : detailTitle) : ''}
         subtitle={selected ? (typeof detailSubtitle === 'function' ? detailSubtitle(selected) : detailSubtitle) : ''}
-        size="sm"
+        size={detailSize}
       >
         {selected && renderDetail(selected, () => setSelected(null))}
       </Modal>

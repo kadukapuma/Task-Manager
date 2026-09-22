@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import StaffPicker from '../../components/StaffPicker/StaffPicker'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
-import Modal from '../../components/Modal/Modal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
+import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import { formatDate, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminAssignTasks.css'
 
@@ -155,6 +155,7 @@ export default function AdminAssignTasks() {
               items={visibleTasks}
               detailTitle={(t) => t.title}
               detailSubtitle={(t) => t.customer?.name || 'No customer'}
+              detailSize="lg"
               renderCard={(t) => (
                 <>
                   <span className="mdc-title">{t.title}</span>
@@ -172,8 +173,8 @@ export default function AdminAssignTasks() {
               )}
               renderDetail={(t) => (
                 <TaskDetailView task={t}>
-                  <div className="detail-row">
-                    <span className="detail-row-label">Assign to</span>
+                  <div>
+                    <span className="task-detail-section-label">Assign to</span>
                     <StaffPicker
                       staff={staff}
                       value={t.assigned_staff_id ?? ''}
@@ -190,32 +191,24 @@ export default function AdminAssignTasks() {
         </div>
       </div>
 
-      <Modal
-        isOpen={Boolean(viewingTask)}
-        onClose={() => setViewingTask(null)}
-        title={viewingTask?.title || ''}
-        subtitle={viewingTask ? `Task #${viewingTask.id}` : ''}
-        size="sm"
-      >
+      <TaskDetailModal task={viewingTask} isOpen={Boolean(viewingTask)} onClose={() => setViewingTask(null)}>
         {viewingTask && (
-          <TaskDetailView task={viewingTask}>
-            <div className="detail-row">
-              <span className="detail-row-label">Assign to</span>
-              <StaffPicker
-                staff={staff}
-                value={viewingTask.assigned_staff_id ?? ''}
-                onChange={(id) => {
-                  assignTask(viewingTask.id, id)
-                  setViewingTask(null)
-                }}
-                placeholder={assigningId === viewingTask.id ? 'Assigning…' : 'Choose staff…'}
-                disabled={assigningId === viewingTask.id}
-                allowUnassigned
-              />
-            </div>
-          </TaskDetailView>
+          <div>
+            <span className="task-detail-section-label">Assign to</span>
+            <StaffPicker
+              staff={staff}
+              value={viewingTask.assigned_staff_id ?? ''}
+              onChange={(id) => {
+                assignTask(viewingTask.id, id)
+                setViewingTask(null)
+              }}
+              placeholder={assigningId === viewingTask.id ? 'Assigning…' : 'Choose staff…'}
+              disabled={assigningId === viewingTask.id}
+              allowUnassigned
+            />
+          </div>
         )}
-      </Modal>
+      </TaskDetailModal>
     </div>
   )
 }

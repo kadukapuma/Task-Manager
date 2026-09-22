@@ -27,6 +27,20 @@ class TaskController extends Controller
         $perPage = max(1, min((int) $request->query('per_page', 20), 1000));
 
         $paginator = $this->baseQuery()
+            ->when($request->query('search'), function ($q, $search) {
+                // A bare or "#"-prefixed task number also matches its id
+                // exactly, alongside the usual fuzzy title/description match.
+                $taskNumber = ltrim(trim($search), '#');
+
+                return $q->where(function ($q) use ($search, $taskNumber) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+
+                    if (ctype_digit($taskNumber)) {
+                        $q->orWhere('id', (int) $taskNumber);
+                    }
+                });
+            })
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->query('priority'), fn ($q, $priority) => $q->where('priority', $priority))
             ->when($request->query('task_type'), fn ($q, $taskType) => $q->where('task_type', $taskType))
@@ -93,15 +107,14 @@ class TaskController extends Controller
         $data['customer_id'] = $this->resolveCustomerId($data);
         $data['created_by'] = $request->user()->id;
 
-        // Non-admins can only report a task exists (title, description,
-        // customer, priority). Assignment, scheduling, estimation, and
-        // recurrence are set later by an admin when they triage/assign it.
+        // Non-admins may take on their own work (assign it to themselves,
+        // with their own schedule/estimate/recurrence), or leave it
+        // unassigned for an admin to triage -- but they can never hand a
+        // task to someone else.
         if (! $request->user()->isAdmin()) {
-            $data['assigned_staff_id'] = null;
-            $data['estimated_minutes'] = null;
-            $data['due_date'] = null;
-            $data['is_repeating'] = false;
-            $data['repeat_frequency'] = null;
+            $data['assigned_staff_id'] = ($data['assigned_staff_id'] ?? null) == $request->user()->id
+                ? $request->user()->id
+                : null;
         }
 
         $task = Task::create($data);
@@ -172,8 +185,17 @@ class TaskController extends Controller
     {
         $this->authorizeTaskAction($request, $task);
 
+        $validated = $request->validate([
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $this->closeOpenTimeLog($task);
-        $task->update(['status' => 'Done', 'completed_at' => now()]);
+
+        $task->update([
+            'status' => 'Done',
+            'completed_at' => now(),
+            'completion_notes' => $validated['notes'] ?? null,
+        ]);
 
         return $this->ok($this->freshTask($task), 'Task marked done.');
     }
@@ -248,13 +270,13 @@ class TaskController extends Controller
      */
     private function freshTask(Task $task): Task
     {
-        return $task->fresh(['customer', 'assignedStaff', 'activeTimeLog', 'attachments'])
+        return $task->fresh(['customer', 'assignedStaff', 'reportedBy', 'activeTimeLog', 'attachments'])
             ->loadSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 
     private function baseQuery()
     {
-        return Task::with('customer', 'assignedStaff', 'activeTimeLog', 'attachments')
+        return Task::with('customer', 'assignedStaff', 'reportedBy', 'activeTimeLog', 'attachments')
             ->withSum('timeLogs as total_logged_secs', 'duration_secs');
     }
 

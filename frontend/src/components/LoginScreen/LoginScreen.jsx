@@ -95,19 +95,7 @@ export default function LoginScreen() {
           </button>
         </form>
 
-        <div className="login-demo-box">
-          <div className="login-demo-title">Default Admin Credentials:</div>
-          <div>Username: <code>admin</code></div>
-          <div>Password: <code>password</code></div>
-          <button
-            type="button"
-            className="btn-action"
-            style={{ marginTop: '8px', fontSize: '0.75rem', width: '100%', justifyContent: 'center', background: 'var(--bg-surface)' }}
-            onClick={() => fillDemo('admin', 'password')}
-          >
-            Auto-fill Admin Credentials
-          </button>
-        </div>
+       
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import TaskForm from '../../components/TaskForm/TaskForm'
 import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
+import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminTasks.css'
@@ -29,7 +30,8 @@ export default function AdminTasks() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [filters, setFilters] = useState({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
+  const [filters, setFilters] = useState({ search: '', status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
+  const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 })
 
@@ -61,6 +63,12 @@ export default function AdminTasks() {
     api.get('/customers').then(({ data }) => setCustomers(data.data)).catch(() => { })
   }, [])
 
+  // Debounce free-text search so it doesn't fire a request on every keystroke.
+  useEffect(() => {
+    const id = setTimeout(() => setFilter('search', searchInput), 350)
+    return () => clearTimeout(id)
+  }, [searchInput]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function setFilter(field, value) {
     setPage(1)
     setFilters((f) => ({ ...f, [field]: value }))
@@ -79,7 +87,8 @@ export default function AdminTasks() {
 
   function resetFilters() {
     setPage(1)
-    setFilters({ status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
+    setSearchInput('')
+    setFilters({ search: '', status: '', priority: '', task_type: '', staff_id: '', customer_id: '', from: '', to: '' })
   }
 
   async function confirmDelete() {
@@ -142,6 +151,20 @@ export default function AdminTasks() {
 
         {/* Filter Controls Bar */}
         <div className="filters-grid">
+          <div className="filter-item">
+            <label htmlFor="f_search">Search</label>
+            <input
+              id="f_search"
+              type="text"
+              placeholder="Title, description, or #task number…"
+              value={searchInput}
+              onChange={(e) => {
+                setPage(1)
+                setSearchInput(e.target.value)
+              }}
+            />
+          </div>
+
           <div className="filter-item">
             <label htmlFor="f_status">Status</label>
             <select
@@ -385,6 +408,7 @@ export default function AdminTasks() {
               items={tasks}
               detailTitle={(t) => t.title}
               detailSubtitle={(t) => `Task #${t.id}`}
+              detailSize="lg"
               renderCard={(t) => (
                 <>
                   <span className="mdc-title">{t.title}</span>
@@ -454,24 +478,16 @@ export default function AdminTasks() {
       </div>
 
       {/* Popup Window: View Task Details (description, etc.) */}
-      <Modal
+      <TaskDetailModal
+        task={viewingTask}
         isOpen={Boolean(viewingTask)}
         onClose={() => setViewingTask(null)}
-        title={viewingTask?.title || ''}
-        subtitle={`Task #${viewingTask?.id || ''}`}
-        size="sm"
-      >
-        {viewingTask && (
-          <TaskDetailView
-            task={viewingTask}
-            onEdit={() => {
-              setEditingTask(viewingTask)
-              setViewingTask(null)
-            }}
-            onDelete={() => setDeletingTask(viewingTask)}
-          />
-        )}
-      </Modal>
+        onEdit={() => {
+          setEditingTask(viewingTask)
+          setViewingTask(null)
+        }}
+        onDelete={() => setDeletingTask(viewingTask)}
+      />
 
       {/* Popup Window: Create Task Modal */}
       <Modal
