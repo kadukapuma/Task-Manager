@@ -1,3 +1,4 @@
+import TaskDescription from '../TaskDescription/TaskDescription'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 
@@ -7,7 +8,7 @@ import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/atta
  * clicking a task shows the same information (including description) on
  * both mobile and web.
  */
-export default function TaskDetailView({ task, onEdit, onDelete, children }) {
+export default function TaskDetailView({ task, onEdit, onDelete, children, collapsibleDescription = false }) {
   return (
     <div className="detail-list">
       {task.task_type && (
@@ -21,28 +22,13 @@ export default function TaskDetailView({ task, onEdit, onDelete, children }) {
 
       <div className="detail-row">
         <span className="detail-row-label">Description</span>
-        <span className="detail-row-value detail-row-multiline">
-          {task.description || <span style={{ color: 'var(--text-muted)' }}>No description provided.</span>}
-        </span>
-      </div>
-
-      <div className="detail-row">
-        <span className="detail-row-label">Customer</span>
-        <span className="detail-row-value">{task.customer?.name ?? '—'}</span>
-      </div>
-
-      <div className="detail-row">
-        <span className="detail-row-label">Assigned Staff</span>
-        <span className="detail-row-value">
-          {task.assigned_staff?.name ?? <span className="badge inactive">Unassigned</span>}
-        </span>
-      </div>
-
-      <div className="detail-row">
-        <span className="detail-row-label">Priority</span>
-        <span className="detail-row-value">
-          <span className={`badge ${priorityClass(task.priority)}`}>{task.priority}</span>
-        </span>
+        <div className="detail-row-value detail-row-multiline">
+          {task.description ? (
+            collapsibleDescription ? (
+              <TaskDescription key={task.id} description={task.description} />
+            ) : task.description
+          ) : <span style={{ color: 'var(--text-muted)' }}>No description provided.</span>}
+        </div>
       </div>
 
       <div className="detail-row">

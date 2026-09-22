@@ -158,9 +158,9 @@ export default function TaskList({ refreshSignal, onChange }) {
         onClose={() => setViewingTask(null)}
         title={viewingTask?.title || ''}
         subtitle={viewingTask ? `Task #${viewingTask.id}` : ''}
-        size="sm"
+        size="md"
       >
-        {viewingTask && <TaskDetailView task={viewingTask} />}
+        {viewingTask && <TaskDetailView task={viewingTask} collapsibleDescription />}
       </Modal>
     </div>
   )
