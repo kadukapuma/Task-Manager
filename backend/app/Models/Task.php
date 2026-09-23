@@ -30,6 +30,7 @@ class Task extends Model
         'priority',
         'status',
         'cannot_complete_reason',
+        'completion_notes',
         'estimated_minutes',
         'is_repeating',
         'repeat_frequency',
@@ -62,6 +63,17 @@ class Task extends Model
     }
 
     public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Same relation as createdBy(), under a name that doesn't collide with
+     * the raw `created_by` FK column when eager-loaded and serialized --
+     * lets the frontend show who reported/self-assigned a task ("Assigned
+     * By") without losing the plain `created_by` id from the JSON payload.
+     */
+    public function reportedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }

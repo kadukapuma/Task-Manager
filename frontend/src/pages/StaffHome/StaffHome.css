@@ -1,11 +1,167 @@
 .staff-home-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
-.staff-home-header {
+.staff-tabs {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
+.staff-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.staff-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+}
+
+.staff-tab-btn.active {
+  color: var(--primary);
+  background: var(--primary-subtle);
+  border-color: rgba(93, 214, 44, 0.3);
+}
+
+.staff-tab-btn .task-count-badge {
+  background: var(--bg-surface-hover);
+  color: var(--text-secondary);
+}
+
+.staff-tab-btn.active .task-count-badge {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.staff-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.staff-toolbar select {
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  height: 36px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  flex: 0 0 auto;
+}
+
+.staff-toolbar select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.table-assigned-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.table-assigned-by i {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Whole-row emphasis for In-Progress tasks -- a colored edge on the leading
+   cell (border on <tr> itself doesn't render under border-collapse). */
+.modern-table tbody tr.row-active td:first-child {
+  border-left: 3px solid var(--primary);
+}
+
+/* Task title/description wrap onto a couple of lines instead of truncating
+   at one -- but clamp + reserve a fixed height so every row stays the same
+   size regardless of how long a given title/description is. Full text is
+   always available in the row's detail popup.
+   Scoped to .staff-tasks-table (not the shared .tasks-table-card, which
+   several other admin pages also use) so this doesn't leak into their
+   tables -- it previously did and broke title wrapping there. */
+.staff-tasks-table .table-cell-text {
+  max-width: 360px;
+}
+
+.staff-tasks-table .table-cell-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  word-break: break-word;
+  line-height: 1.35;
+  min-height: 2.7em;
+}
+
+.staff-tasks-table .table-cell-subtitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  word-break: break-word;
+  line-height: 1.3;
+  min-height: 1.3em;
+}
+
+.btn-table-icon.start {
+  background: var(--info, #0284c7);
+}
+
+.btn-table-icon.start:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+.btn-table-icon.pause {
+  background: var(--warning);
+}
+
+.btn-table-icon.pause:hover:not(:disabled) {
+  background: #b45309;
+}
+
+.btn-table-icon.complete {
+  background: var(--success);
+}
+
+.btn-table-icon.complete:hover:not(:disabled) {
+  background: var(--success-hover);
+}
+
+.btn-table-icon.undone {
+  background: var(--danger);
+}
+
+.btn-table-icon.undone:hover:not(:disabled) {
+  background: var(--danger-text);
+}
+
+@media (max-width: 768px) {
+  .staff-toolbar select {
+    font-size: 16px;
+    min-height: 44px;
+    flex: 1 1 140px;
+  }
+}

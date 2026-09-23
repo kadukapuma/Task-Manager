@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users', [UserController::class, 'store']);
         Route::patch('/users/{user}', [UserController::class, 'update']);
         Route::patch('/users/{user}/reset-password', [UserController::class, 'resetPassword']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
         Route::get('/tasks/deleted', [TaskController::class, 'deleted']);
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
+import { useAuth } from '../../context/AuthContext'
 import Modal from '../Modal/Modal'
 import MobileCardList from '../MobileCardList/MobileCardList'
+import ConfirmModal from '../ConfirmModal/ConfirmModal'
 import './UserManagement.css'
 
 function initialsOf(name) {
@@ -16,6 +18,7 @@ function initialsOf(name) {
 const emptyForm = { name: '', username: '', password: '', role: 'staff' }
 
 export default function UserManagement() {
+  const { user: currentUser } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState('')
@@ -25,6 +28,14 @@ export default function UserManagement() {
   const [form, setForm] = useState(emptyForm)
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const [editTargetUser, setEditTargetUser] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', username: '', role: 'staff' })
+  const [editError, setEditError] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
+
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
 
   const [resetTargetUser, setResetTargetUser] = useState(null)
   const [resetPassword, setResetPassword] = useState('')
@@ -76,6 +87,49 @@ export default function UserManagement() {
       setListError(apiErrorMessage(err, 'Could not update user status.'))
     } finally {
       setPendingToggleId(null)
+    }
+  }
+
+  function openEdit(u) {
+    setEditTargetUser(u)
+    setEditForm({ name: u.name, username: u.username, role: u.role })
+    setEditError('')
+  }
+
+  async function handleEditUser(e) {
+    e.preventDefault()
+    setEditError('')
+
+    if (!editForm.name.trim() || !editForm.username.trim()) {
+      setEditError('Name and username are required.')
+      return
+    }
+
+    setEditSubmitting(true)
+    try {
+      const { data } = await api.patch(`/users/${editTargetUser.id}`, editForm)
+      setUsers((prev) => prev.map((u) => (u.id === data.id ? data : u)).sort((a, b) => a.name.localeCompare(b.name)))
+      setEditTargetUser(null)
+    } catch (err) {
+      setEditError(apiErrorMessage(err, 'Could not update this user.'))
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  async function handleDeleteUser() {
+    if (!deleteTargetUser) return
+    setDeleteSubmitting(true)
+    setListError('')
+    try {
+      await api.delete(`/users/${deleteTargetUser.id}`)
+      setUsers((prev) => prev.filter((u) => u.id !== deleteTargetUser.id))
+      setDeleteTargetUser(null)
+    } catch (err) {
+      setListError(apiErrorMessage(err, 'Could not delete this user.'))
+      setDeleteTargetUser(null)
+    } finally {
+      setDeleteSubmitting(false)
     }
   }
 
@@ -191,6 +245,18 @@ export default function UserManagement() {
                         >
                           Reset Password
                         </button>
+                        <button type="button" className="btn-table-action" onClick={() => openEdit(u)}>
+                          Edit
+                        </button>
+                        {u.id !== currentUser?.id && (
+                          <button
+                            type="button"
+                            className="btn-table-action danger"
+                            onClick={() => setDeleteTargetUser(u)}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -261,6 +327,28 @@ export default function UserManagement() {
                   >
                     Reset Password
                   </button>
+                  <button
+                    type="button"
+                    className="btn-table-action"
+                    onClick={() => {
+                      close()
+                      openEdit(u)
+                    }}
+                  >
+                    Edit
+                  </button>
+                  {u.id !== currentUser?.id && (
+                    <button
+                      type="button"
+                      className="btn-table-action danger"
+                      onClick={() => {
+                        close()
+                        setDeleteTargetUser(u)
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -390,6 +478,83 @@ export default function UserManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Popup Window: Edit User Modal */}
+      <Modal
+        isOpen={Boolean(editTargetUser)}
+        onClose={() => setEditTargetUser(null)}
+        title={`Edit ${editTargetUser?.name || ''}`}
+        subtitle="Update this team member's name, username, or role."
+        size="md"
+      >
+        <form className="task-form-modern" onSubmit={handleEditUser}>
+          {editError && (
+            <div className="alert-error">
+              <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" /> {editError}
+            </div>
+          )}
+
+          <div className="form-field">
+            <label htmlFor="edit_name">Full Name *</label>
+            <input
+              id="edit_name"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-grid-2col">
+            <div className="form-field">
+              <label htmlFor="edit_username">Username *</label>
+              <input
+                id="edit_username"
+                value={editForm.username}
+                onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="edit_role">Assigned Role</label>
+              <select
+                id="edit_role"
+                value={editForm.role}
+                disabled={editTargetUser?.id === currentUser?.id}
+                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+              >
+                <option value="staff">Staff Member</option>
+                <option value="admin">Administrator</option>
+              </select>
+              {editTargetUser?.id === currentUser?.id && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+                  You can't change your own role.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="modal-form-actions">
+            <button type="button" className="btn-modal-cancel" onClick={() => setEditTargetUser(null)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-modal-submit" disabled={editSubmitting}>
+              {editSubmitting ? 'Saving…' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={Boolean(deleteTargetUser)}
+        onClose={() => setDeleteTargetUser(null)}
+        onConfirm={handleDeleteUser}
+        title="Delete Team Member"
+        message={`"${deleteTargetUser?.name}" will be permanently removed. This can't be undone. If they've logged work hours, deactivate their account instead to keep that history.`}
+        confirmLabel="Delete User"
+        danger
+        busy={deleteSubmitting}
+      />
     </div>
   )
 }

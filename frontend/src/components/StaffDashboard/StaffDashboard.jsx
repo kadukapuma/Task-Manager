@@ -9,12 +9,38 @@ function shortDayLabel(dateStr) {
   return new Date(`${dateStr}T00:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** Start/end date strings for a quick-filter preset ('all' = no range). */
+function presetRange(type) {
+  const now = new Date()
+
+  if (type === 'today') {
+    const t = todayStr()
+    return { f: t, t }
+  }
+  if (type === 'week') {
+    const first = now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+    const monday = new Date(now)
+    monday.setDate(first)
+    return { f: monday.toISOString().slice(0, 10), t: todayStr() }
+  }
+  if (type === 'month') {
+    return { f: new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10), t: todayStr() }
+  }
+  return { f: '', t: '' }
+}
+
 export default function StaffDashboard() {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
+  // Default to "Today" so the dashboard opens on what's relevant right now
+  // instead of an all-time (and often stale-looking) view.
+  const [from, setFrom] = useState(todayStr)
+  const [to, setTo] = useState(todayStr)
 
   function load() {
     setLoading(true)
@@ -33,22 +59,7 @@ export default function StaffDashboard() {
   useEffect(load, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function setPreset(type) {
-    const now = new Date()
-    let f = ''
-    let t = ''
-
-    if (type === 'today') {
-      f = now.toISOString().slice(0, 10)
-      t = f
-    } else if (type === 'week') {
-      const first = now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
-      const monday = new Date(now.setDate(first))
-      f = monday.toISOString().slice(0, 10)
-      t = new Date().toISOString().slice(0, 10)
-    } else if (type === 'month') {
-      f = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-      t = new Date().toISOString().slice(0, 10)
-    }
+    const { f, t } = presetRange(type)
 
     setFrom(f)
     setTo(t)
@@ -88,18 +99,20 @@ export default function StaffDashboard() {
           <div className="staff-dashboard-filter-card">
             <div className="filter-preset-buttons">
               <span className="filter-label">Quick Filters:</span>
-              <button type="button" className={`btn-preset ${!from && !to ? 'active' : ''}`} onClick={() => setPreset('all')}>
-                All Time
-              </button>
-              <button type="button" className="btn-preset" onClick={() => setPreset('today')}>
-                Today
-              </button>
-              <button type="button" className="btn-preset" onClick={() => setPreset('week')}>
-                This Week
-              </button>
-              <button type="button" className="btn-preset" onClick={() => setPreset('month')}>
-                This Month
-              </button>
+              {['all', 'today', 'week', 'month'].map((type) => {
+                const range = presetRange(type)
+                const isActive = from === range.f && to === range.t
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    className={`btn-preset ${isActive ? 'active' : ''}`}
+                    onClick={() => setPreset(type)}
+                  >
+                    {type === 'all' ? 'All Time' : type === 'today' ? 'Today' : type === 'week' ? 'This Week' : 'This Month'}
+                  </button>
+                )
+              })}
             </div>
 
             <div className="date-filters-group">

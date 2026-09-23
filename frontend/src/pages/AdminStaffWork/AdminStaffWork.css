@@ -4,97 +4,296 @@
   gap: 1.25rem;
 }
 
-.staff-work-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+/* One aligned row: period presets on the left, a compact custom range on
+   the right -- replaces three separately-spaced rows (label, presets,
+   from/to fields) that never quite lined up with each other. */
+.staffwork-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
-.staff-work-card {
+.staffwork-daterange {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  padding: 0 10px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-hover);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.staffwork-daterange input[type='date'] {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  padding: 0;
+  height: 100%;
+  width: 124px;
+}
+
+.staffwork-daterange input[type='date']:focus {
+  outline: none;
+}
+
+.staffwork-daterange-sep {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .staffwork-toolbar {
+    align-items: stretch;
+  }
+
+  .staffwork-daterange {
+    justify-content: center;
+    height: 42px;
+  }
+
+  .staffwork-daterange input[type='date'] {
+    flex: 1;
+    font-size: 16px;
+  }
+}
+
+.staffwork-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.staffwork-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1rem 1.125rem;
+  padding: 1.125rem 1.25rem 1.125rem 1.375rem;
   box-shadow: var(--shadow-sm);
   text-align: left;
   cursor: pointer;
   transition: var(--transition);
+  overflow: hidden;
 }
 
-.staff-work-card:hover {
-  border-color: rgba(93, 214, 44, 0.3);
-  transform: translateY(-1px);
+/* Status-colored accent bar on the leading edge, same language as the
+   priority accent on task cards elsewhere in the app. */
+.staffwork-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
 }
 
-.staff-work-card.active {
+.staffwork-card-working::before {
+  background: var(--primary);
+}
+
+.staffwork-card-queued::before {
+  background: var(--warning);
+}
+
+.staffwork-card-idle::before {
+  background: var(--border);
+}
+
+.staffwork-card:hover {
+  border-color: rgba(93, 214, 44, 0.35);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.staffwork-card.active {
   border-color: var(--primary);
   background: var(--primary-subtle);
 }
 
-.staff-work-avatar {
-  width: 40px;
-  height: 40px;
+.staffwork-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.staffwork-avatar {
+  position: relative;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
-  background: var(--primary-subtle);
-  color: var(--primary);
+  background: linear-gradient(145deg, var(--primary-subtle), var(--bg-surface-hover));
+  color: var(--primary-text);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.staff-work-name-group {
+.staffwork-card.active .staffwork-avatar {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.staffwork-avatar-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--primary);
+  opacity: 0.55;
+  animation: staffwork-ring-pulse 2s ease-out infinite;
+}
+
+@keyframes staffwork-ring-pulse {
+  0% { transform: scale(0.92); opacity: 0.65; }
+  100% { transform: scale(1.22); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .staffwork-avatar-ring {
+    animation: none;
+  }
+}
+
+.staffwork-name-group {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.staff-work-name {
-  font-weight: 600;
+.staffwork-name {
+  font-weight: 700;
   color: var(--text-primary);
   font-size: 0.9375rem;
-}
-
-.staff-work-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.staff-work-stat {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  background: var(--bg-surface-hover);
-  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.staff-work-stat.working {
-  background: var(--info-subtle);
-  color: var(--info-text);
+.staffwork-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-hover);
+  color: var(--text-muted);
 }
 
-.staff-work-stat.paused {
+.staffwork-status-badge.working {
+  background: var(--primary-subtle);
+  color: var(--primary-text);
+}
+
+.staffwork-status-badge.queued {
   background: var(--warning-subtle);
   color: var(--warning-text);
 }
 
-.staff-work-stat.finished {
+.staffwork-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.staffwork-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.staffwork-metric:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.staffwork-metric-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  margin-bottom: 2px;
+}
+
+.staffwork-metric-icon.success {
   background: var(--success-subtle);
+  color: var(--success);
+}
+
+.staffwork-metric-icon.primary {
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+
+.staffwork-eff-icon-good {
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+.staffwork-eff-icon-over {
+  background: var(--warning-subtle);
+  color: var(--warning);
+}
+
+.staffwork-eff-icon-neutral {
+  background: var(--bg-surface-hover);
+  color: var(--text-muted);
+}
+
+.staffwork-metric-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.staffwork-metric-value.is-zero {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.staffwork-metric-value.staffwork-eff-good {
   color: var(--success-text);
 }
 
-.staff-work-stat.cannot-complete {
-  background: var(--danger-subtle);
-  color: var(--danger-text);
+.staffwork-metric-value.staffwork-eff-over {
+  color: var(--warning-text);
+}
+
+.staffwork-metric-value.staffwork-eff-neutral {
+  color: var(--text-muted);
+}
+
+.staffwork-metric-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
 }
 
 /* Keep this page's native date filters and analytics calendars in sync with the theme. */

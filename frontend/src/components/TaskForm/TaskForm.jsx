@@ -44,6 +44,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState({})
+  const [selfAssign, setSelfAssign] = useState(false)
 
   const [pendingFiles, setPendingFiles] = useState([])
   const [existingAttachments, setExistingAttachments] = useState(task?.attachments ?? [])
@@ -175,7 +176,7 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
       title: form.title,
       task_type: form.task_type,
       description: form.description || null,
-      assigned_staff_id: form.assigned_staff_id || null,
+      assigned_staff_id: isAdmin ? form.assigned_staff_id || null : (selfAssign ? user.id : null),
       priority: form.priority,
       estimated_minutes: totalEstimatedMinutes > 0 ? totalEstimatedMinutes : null,
       due_date: form.due_date || null,
@@ -439,13 +440,24 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
           </div>
 
           {!isAdmin && !isEdit && (
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
-              This task goes into the unassigned queue. An admin will assign it, set the schedule,
-              time estimate, and recurrence when they pick it up.
-            </p>
+            <>
+              <label className="form-toggle-row">
+                <input
+                  type="checkbox"
+                  checked={selfAssign}
+                  onChange={(e) => setSelfAssign(e.target.checked)}
+                />
+                <span className="form-toggle-label">Assign this task to me</span>
+              </label>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+                {selfAssign
+                  ? 'This task will be assigned to you right away -- set your own schedule, estimate, and recurrence below.'
+                  : 'This task goes into the unassigned queue. An admin will assign it, set the schedule, time estimate, and recurrence when they pick it up.'}
+              </p>
+            </>
           )}
 
-          {isAdmin && (
+          {(isAdmin || selfAssign) && (
             <>
               <div className="form-grid-2col">
                 {isEdit && (

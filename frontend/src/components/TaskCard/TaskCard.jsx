@@ -71,6 +71,12 @@ export default function TaskCard({
           </p>
         )}
 
+        {task.status === 'Done' && task.completion_notes && (
+          <p className="task-card-reason">
+            <i className="fa-solid fa-circle-check" aria-hidden="true" /> {task.completion_notes}
+          </p>
+        )}
+
         <div className="task-card-meta">
           {task.customer && (
             <span className="task-meta-item">
