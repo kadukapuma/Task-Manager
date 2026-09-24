@@ -81,3 +81,52 @@
   gap: 8px;
 }
 
+
+/* Staff task popups keep all text inside the viewport, including unbroken words. */
+.task-list-card .modal-title-wrap {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.task-list-card .modal-header {
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.task-list-card .modal-close-btn {
+  flex-shrink: 0;
+}
+
+.task-list-card .detail-row-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.task-list-card .detail-row-multiline {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.task-list-card .modal-body {
+  min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .task-list-card .modal-backdrop {
+    padding: 12px;
+  }
+
+  .task-list-card .modal-dialog {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .task-list-card .modal-header,
+  .task-list-card .modal-body {
+    padding: 1rem;
+  }
+
+  .task-list-card .modal-close-btn {
+    width: 44px;
+    height: 44px;
+  }
+}

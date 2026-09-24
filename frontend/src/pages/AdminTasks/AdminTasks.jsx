@@ -6,6 +6,7 @@ import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
+import DatePicker from '../../components/DatePicker/DatePicker'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './AdminTasks.css'
 
@@ -237,21 +238,19 @@ export default function AdminTasks() {
 
           <div className="filter-item">
             <label htmlFor="f_from">Created From</label>
-            <input
+            <DatePicker
               id="f_from"
-              type="date"
               value={filters.from}
-              onChange={(e) => setFilter('from', e.target.value)}
+              onChange={(v) => setFilter('from', v)}
             />
           </div>
 
           <div className="filter-item">
             <label htmlFor="f_to">Created To</label>
-            <input
+            <DatePicker
               id="f_to"
-              type="date"
               value={filters.to}
-              onChange={(e) => setFilter('to', e.target.value)}
+              onChange={(v) => setFilter('to', v)}
             />
           </div>
 

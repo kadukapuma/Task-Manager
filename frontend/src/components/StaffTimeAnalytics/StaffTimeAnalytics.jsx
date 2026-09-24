@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import BarChart from '../charts/BarChart'
+import DatePicker from '../DatePicker/DatePicker'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import { formatDuration, formatMinutes } from '../../utils/format'
 
@@ -80,11 +81,11 @@ export default function StaffTimeAnalytics() {
       <div className="date-filters-bar">
         <div className="date-filter-field">
           <label htmlFor="staff_time_from">From Date</label>
-          <input id="staff_time_from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <DatePicker id="staff_time_from" value={from} onChange={setFrom} />
         </div>
         <div className="date-filter-field">
           <label htmlFor="staff_time_to">To Date</label>
-          <input id="staff_time_to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <DatePicker id="staff_time_to" value={to} onChange={setTo} />
         </div>
         <button type="button" className="btn-filter-apply" onClick={() => load()}>
           Apply Filter
