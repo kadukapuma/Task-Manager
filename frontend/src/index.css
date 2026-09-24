@@ -183,6 +183,22 @@
   --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.6);
 }
 
+/* Keep native form controls (e.g. the date picker's calendar popup) in sync
+   with the page theme, including the in-app toggle. */
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

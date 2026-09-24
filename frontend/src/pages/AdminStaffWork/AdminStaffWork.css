@@ -296,17 +296,3 @@
   color: var(--text-muted);
 }
 
-/* Keep this page's native date filters and analytics calendars in sync with the theme. */
-.admin-staffwork-container input[type='date'] {
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] .admin-staffwork-container input[type='date'] {
-  color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .admin-staffwork-container input[type='date'] {
-    color-scheme: dark;
-  }
-}
