@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, statusColor, taskTypeClass } from '../../utils/format'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import BarChart from '../charts/BarChart'
+import DatePicker from '../DatePicker/DatePicker'
 import './StaffDashboard.css'
 
 function shortDayLabel(dateStr) {
@@ -118,20 +119,18 @@ export default function StaffDashboard() {
             <div className="date-filters-group">
               <div className="date-field">
                 <label htmlFor="staff_from">From</label>
-                <input
+                <DatePicker
                   id="staff_from"
-                  type="date"
                   value={from}
-                  onChange={(e) => setFrom(e.target.value)}
+                  onChange={setFrom}
                 />
               </div>
               <div className="date-field">
                 <label htmlFor="staff_to">To</label>
-                <input
+                <DatePicker
                   id="staff_to"
-                  type="date"
                   value={to}
-                  onChange={(e) => setTo(e.target.value)}
+                  onChange={setTo}
                 />
               </div>
               <button type="button" className="btn-filter-apply" onClick={load}>

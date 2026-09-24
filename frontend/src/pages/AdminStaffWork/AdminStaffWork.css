@@ -28,7 +28,7 @@
   flex-shrink: 0;
 }
 
-.staffwork-daterange input[type='date'] {
+.staffwork-daterange input {
   border: none;
   background: transparent;
   color: var(--text-primary);
@@ -38,7 +38,7 @@
   width: 124px;
 }
 
-.staffwork-daterange input[type='date']:focus {
+.staffwork-daterange input:focus {
   outline: none;
 }
 
@@ -57,7 +57,7 @@
     height: 42px;
   }
 
-  .staffwork-daterange input[type='date'] {
+  .staffwork-daterange input {
     flex: 1;
     font-size: 16px;
   }
