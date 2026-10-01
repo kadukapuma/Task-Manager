@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState } from 'react'
 import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
+import TaskDescription from '../TaskDescription/TaskDescription'
 import './TaskCard.css'
 
 const PRIORITY_ICON = {
@@ -7,6 +8,7 @@ const PRIORITY_ICON = {
   Urgent: 'fa-bolt',
   Normal: 'fa-thumbtack',
 }
+
 
 export default function TaskCard({
   task,
@@ -61,7 +63,7 @@ export default function TaskCard({
           )}
         </div>
 
-        {task.description && <p className="task-card-desc">{task.description}</p>}
+        {task.description && <TaskDescription key={task.id} description={task.description} />}
 
         {task.status === 'Undone' && task.cannot_complete_reason && (
           <p className="task-card-reason">

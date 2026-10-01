@@ -76,7 +76,6 @@
   border-color: var(--primary);
 }
 
-.filter-item input[type='date'],
 .filter-item input[type='text'] {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
@@ -88,7 +87,6 @@
   height: 36px;
 }
 
-.filter-item input[type='date']:focus,
 .filter-item input[type='text']:focus {
   outline: none;
   border-color: var(--primary);
@@ -96,7 +94,6 @@
 
 @media (max-width: 768px) {
   .filter-item select,
-  .filter-item input[type='date'],
   .filter-item input[type='text'] {
     font-size: 16px;
     min-height: 44px;
@@ -154,4 +151,5 @@
   word-break: break-word;
   line-height: 1.35;
 }
+
 

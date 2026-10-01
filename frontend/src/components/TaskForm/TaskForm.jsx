@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api, { apiErrorMessage } from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import StaffPicker from '../StaffPicker/StaffPicker'
+import DatePicker from '../DatePicker/DatePicker'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 import './TaskForm.css'
 
@@ -510,11 +511,10 @@ export default function TaskForm({ task = null, onSaved, onCancel }) {
 
                 <div className="form-field">
                   <label htmlFor="task_due_date">Due Date</label>
-                  <input
+                  <DatePicker
                     id="task_due_date"
-                    type="date"
                     value={form.due_date}
-                    onChange={(e) => set('due_date', e.target.value)}
+                    onChange={(v) => set('due_date', v)}
                   />
                 </div>
               </div>

@@ -4,6 +4,7 @@ import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import BarChart from '../../components/charts/BarChart'
+import DatePicker from '../../components/DatePicker/DatePicker'
 import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, taskTypeClass } from '../../utils/format'
 import './AdminStaffWork.css'
 
@@ -156,9 +157,9 @@ export default function AdminStaffWork() {
 
           <div className="staffwork-daterange">
             <i className="fa-regular fa-calendar" aria-hidden="true" />
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
+            <DatePicker value={from} onChange={setFrom} aria-label="From date" showIcon={false} />
             <span className="staffwork-daterange-sep">–</span>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+            <DatePicker value={to} onChange={setTo} aria-label="To date" showIcon={false} />
           </div>
         </div>
       </div>

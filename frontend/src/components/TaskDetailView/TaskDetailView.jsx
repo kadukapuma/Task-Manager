@@ -1,3 +1,4 @@
+import TaskDescription from '../TaskDescription/TaskDescription'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 import './TaskDetailView.css'
@@ -28,7 +29,7 @@ function StatTile({ icon, label, value }) {
  * clicking a task shows the same information (including description) on
  * both mobile and web.
  */
-export default function TaskDetailView({ task, onEdit, onDelete, children }) {
+export default function TaskDetailView({ task, onEdit, onDelete, children, collapsibleDescription = false }) {
   return (
     <div className="task-detail">
       <div className="task-detail-badges">
@@ -49,7 +50,7 @@ export default function TaskDetailView({ task, onEdit, onDelete, children }) {
 
       <div className="task-detail-description">
         <span className="task-detail-section-label">Description</span>
-        <p>{task.description || <span style={{ color: 'var(--text-muted)' }}>No description provided.</span>}</p>
+     <p>{task.description || <span style={{ color: 'var(--text-muted)' }}>No description provided.</span>}</p>
       </div>
 
       {task.status === 'Undone' && task.cannot_complete_reason && (
