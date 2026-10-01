@@ -1,0 +1,65 @@
+# Local environment files (keep shareable examples)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+/backend/vendor/
+/backend/auth.json
+
+# Frontend build output and caches
+dist/
+dist-ssr/
+.vite/
+.cache/
+
+# Laravel generated public assets and storage link
+/backend/public/build/
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/pail/
+
+# Laravel runtime files (retain directory placeholder rules)
+/backend/bootstrap/cache/*
+!/backend/bootstrap/cache/.gitignore
+/backend/storage/logs/*
+!/backend/storage/logs/.gitignore
+/backend/storage/framework/cache/data/**
+!/backend/storage/framework/cache/data/**/.gitignore
+/backend/storage/framework/sessions/*
+!/backend/storage/framework/sessions/.gitignore
+/backend/storage/framework/views/*
+!/backend/storage/framework/views/.gitignore
+/backend/storage/framework/testing/*
+!/backend/storage/framework/testing/.gitignore
+
+# Local databases
+/backend/database/*.sqlite*
+
+# Logs and test output
+*.log
+coverage/
+.phpunit.cache/
+.phpunit.result.cache
+
+# Local development tools
+/backend/.phpactor.json
+/backend/Homestead.json
+/backend/Homestead.yaml
+.idea/
+.fleet/
+.nova/
+.zed/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.user
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini

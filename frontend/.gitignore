@@ -23,4 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Local environment values (keep .env.example in version control)
 .env
+.env.*
+!.env.example
+
+# Test coverage and tool caches
+coverage
+.vite
+.cache
