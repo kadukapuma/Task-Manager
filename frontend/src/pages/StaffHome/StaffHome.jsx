@@ -6,6 +6,7 @@ import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
+import AutoPauseToggle from '../../components/AutoPauseToggle/AutoPauseToggle'
 import { formatDate, formatDuration, formatStopwatch, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import './StaffHome.css'
 
@@ -169,6 +170,19 @@ export default function StaffHome() {
     }
   }
 
+  async function toggleAutoPause(task, enabled) {
+    setBusyId(task.id)
+    setError('')
+    try {
+      await api.post(`/tasks/${task.id}/auto-pause`, { enabled })
+      bump()
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Could not update auto-pause.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   function openCannotComplete(task) {
     setReason('')
     setReasonError('')
@@ -257,6 +271,9 @@ export default function StaffHome() {
 
         {tab === 'mine' && t.status === 'In Progress' && (
           <>
+            {t.active_time_log && (
+              <AutoPauseToggle task={t} compact disabled={busy} onToggle={toggleAutoPause} />
+            )}
             <button
               type="button"
               className="btn-table-icon pause"
@@ -502,6 +519,9 @@ export default function StaffHome() {
                       )}
                       {t.status === 'In Progress' && (
                         <>
+                          {t.active_time_log && (
+                            <AutoPauseToggle task={t} disabled={busyId === t.id} onToggle={toggleAutoPause} />
+                          )}
                           <button type="button" className="btn-table-action" onClick={() => runAction(t, 'pause')}>
                             <i className="fa-solid fa-pause" aria-hidden="true" /> Pause
                           </button>

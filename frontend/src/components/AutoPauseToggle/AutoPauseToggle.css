@@ -1,0 +1,68 @@
+.auto-pause-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  position: relative;
+}
+
+.auto-pause-toggle.on {
+  color: var(--primary-text);
+}
+
+.auto-pause-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.auto-pause-track {
+  flex-shrink: 0;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.15s ease;
+}
+
+.auto-pause-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.auto-pause-toggle.on .auto-pause-track {
+  background: var(--primary);
+}
+
+.auto-pause-toggle.on .auto-pause-thumb {
+  transform: translateX(14px);
+}
+
+.auto-pause-toggle input:focus-visible + .auto-pause-track {
+  box-shadow: 0 0 0 3px var(--primary-focus-ring);
+}
+
+.auto-pause-toggle input:disabled + .auto-pause-track {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auto-pause-toggle.compact {
+  gap: 4px;
+}
+
+.auto-pause-icon {
+  font-size: 0.85rem;
+}

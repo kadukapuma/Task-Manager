@@ -47,6 +47,19 @@ export default function TaskList({ refreshSignal, onChange }) {
     }
   }
 
+  async function toggleAutoPause(task, enabled) {
+    setBusyId(task.id)
+    setError('')
+    try {
+      await api.post(`/tasks/${task.id}/auto-pause`, { enabled })
+      load()
+    } catch (err) {
+      setError(apiErrorMessage(err, 'Could not update auto-pause.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   function openCannotComplete(task) {
     setReason('')
     setReasonError('')
@@ -136,6 +149,7 @@ export default function TaskList({ refreshSignal, onChange }) {
               onPause={(t) => runAction(t, 'pause')}
               onComplete={openComplete}
               onCannotComplete={openCannotComplete}
+              onToggleAutoPause={toggleAutoPause}
               onView={setViewingTask}
             />
           ))}

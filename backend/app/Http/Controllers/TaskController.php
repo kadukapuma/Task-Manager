@@ -139,6 +139,10 @@ class TaskController extends Controller
     {
         $this->authorizeTaskAction($request, $task);
 
+        $validated = $request->validate([
+            'auto_pause' => ['sometimes', 'boolean'],
+        ]);
+
         if ($task->assigned_staff_id === null) {
             return $this->ok(null, 'Task must be picked up or assigned before it can be started.', Response::HTTP_CONFLICT);
         }
@@ -160,6 +164,7 @@ class TaskController extends Controller
             'task_id' => $task->id,
             'staff_id' => $task->assigned_staff_id,
             'start_time' => now(),
+            'auto_pause_at' => ($validated['auto_pause'] ?? true) ? TimeLog::nextOfficeClose() : null,
         ]);
 
         $task->update(['status' => 'In Progress']);
@@ -179,6 +184,33 @@ class TaskController extends Controller
         $task->update(['status' => 'Paused']);
 
         return $this->ok($this->freshTask($task), 'Task paused.');
+    }
+
+    /**
+     * Switch the running session's "auto-pause at closing time" on or off.
+     */
+    public function autoPause(Request $request, Task $task)
+    {
+        $this->authorizeTaskAction($request, $task);
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $openLog = $task->status === 'In Progress' ? $this->openTimeLog($task) : null;
+
+        if (! $openLog) {
+            return $this->ok(null, 'Task is not in progress.', Response::HTTP_CONFLICT);
+        }
+
+        $openLog->update([
+            'auto_pause_at' => $validated['enabled'] ? TimeLog::nextOfficeClose() : null,
+        ]);
+
+        return $this->ok(
+            $this->freshTask($task),
+            $validated['enabled'] ? 'Task will auto-pause at closing time.' : 'Auto-pause turned off.'
+        );
     }
 
     public function complete(Request $request, Task $task)
@@ -295,20 +327,14 @@ class TaskController extends Controller
         );
     }
 
+    private function openTimeLog(Task $task): ?TimeLog
+    {
+        return $task->timeLogs()->whereNull('finish_time')->latest('start_time')->first();
+    }
+
     private function closeOpenTimeLog(Task $task): void
     {
-        $openLog = $task->timeLogs()->whereNull('finish_time')->latest('start_time')->first();
-
-        if (! $openLog) {
-            return;
-        }
-
-        $finishTime = now();
-
-        $openLog->update([
-            'finish_time' => $finishTime,
-            'duration_secs' => $finishTime->timestamp - $openLog->start_time->timestamp,
-        ]);
+        $this->openTimeLog($task)?->close();
     }
 
     /**

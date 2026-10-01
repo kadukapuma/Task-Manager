@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/tasks/{task}', [TaskController::class, 'update']);
     Route::post('/tasks/{task}/start', [TaskController::class, 'start']);
     Route::post('/tasks/{task}/pause', [TaskController::class, 'pause']);
+    Route::post('/tasks/{task}/auto-pause', [TaskController::class, 'autoPause']);
     Route::post('/tasks/{task}/complete', [TaskController::class, 'complete']);
     Route::post('/tasks/{task}/cannot-complete', [TaskController::class, 'cannotComplete']);
     Route::post('/tasks/{task}/attachments', [TaskAttachmentController::class, 'store']);

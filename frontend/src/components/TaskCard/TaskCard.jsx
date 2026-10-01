@@ -1,6 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { formatDate, formatDuration, formatMinutes, formatStopwatch, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
 import TaskDescription from '../TaskDescription/TaskDescription'
+import AutoPauseToggle from '../AutoPauseToggle/AutoPauseToggle'
 import './TaskCard.css'
 
 const PRIORITY_ICON = {
@@ -18,6 +19,7 @@ export default function TaskCard({
   onPause,
   onComplete,
   onCannotComplete,
+  onToggleAutoPause,
   onView,
 }) {
   const priorityIcon = PRIORITY_ICON[task.priority] || 'fa-thumbtack'
@@ -104,6 +106,9 @@ export default function TaskCard({
           <span className="task-meta-item">
             <i className="fa-regular fa-calendar" aria-hidden="true" /> Due: {formatDate(task.due_date)}
           </span>
+          {!readOnly && isLive && onToggleAutoPause && (
+            <AutoPauseToggle task={task} disabled={busy} onToggle={onToggleAutoPause} />
+          )}
           {readOnly && (
             <span className="task-meta-item">
               <i className="fa-solid fa-user-check" aria-hidden="true" />{' '}

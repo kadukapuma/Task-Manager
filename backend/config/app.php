@@ -69,6 +69,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Office Closing Time
+    |--------------------------------------------------------------------------
+    |
+    | Running tasks with "auto-pause" switched on are paused at this local
+    | time. Times are stored in the app timezone above; the closing time is
+    | interpreted in the office's own timezone.
+    |
+    */
+
+    'office_close_time' => env('OFFICE_CLOSE_TIME', '17:00'),
+
+    'office_timezone' => env('OFFICE_TIMEZONE', 'Asia/Colombo'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
