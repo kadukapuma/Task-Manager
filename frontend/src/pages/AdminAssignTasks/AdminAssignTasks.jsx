@@ -5,6 +5,7 @@ import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import { formatDate, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './AdminAssignTasks.css'
 
 const PRIORITY_ICON = {
@@ -89,7 +90,7 @@ export default function AdminAssignTasks() {
         <div className="modern-table-container">
           {loading ? (
             <div className="task-empty-state">
-              <div className="route-spinner" style={{ width: 28, height: 28 }} />
+              <LogoLoader size={48} />
               <span className="task-empty-desc">Loading tasks…</span>
             </div>
           ) : visibleTasks.length === 0 ? (

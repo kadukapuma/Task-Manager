@@ -8,6 +8,7 @@ import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import DatePicker from '../../components/DatePicker/DatePicker'
 import { formatDate, formatDuration, formatMinutes, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './AdminTasks.css'
 
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
@@ -278,7 +279,7 @@ export default function AdminTasks() {
         <div className="modern-table-container">
           {loading ? (
             <div className="task-empty-state">
-              <div className="route-spinner" style={{ width: 28, height: 28 }} />
+              <LogoLoader size={48} />
               <span className="task-empty-desc">Loading task directory…</span>
             </div>
           ) : tasks.length === 0 ? (

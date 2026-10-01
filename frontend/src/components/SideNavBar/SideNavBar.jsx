@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import Modal from '../Modal/Modal'
+import logo from '../../assets/taskflow-logo.png'
 import './SideNavBar.css'
 
 export default function SideNavBar({ links = [], title = 'Management', isOpen = false, onClose }) {
@@ -43,7 +44,7 @@ export default function SideNavBar({ links = [], title = 'Management', isOpen = 
       <aside className={`sidenav-container ${isOpen ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidenav-header">
           <div className="sidenav-logo-icon">
-            <i className="fa-solid fa-diagram-project" aria-hidden="true" />
+            <img src={logo} alt="" />
           </div>
           <div className="sidenav-brand-text">
             <span className="sidenav-brand-name">TaskFlow</span>

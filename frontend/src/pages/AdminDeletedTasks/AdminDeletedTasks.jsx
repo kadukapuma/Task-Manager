@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal'
 import { formatDate, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './AdminDeletedTasks.css'
 
 const PRIORITY_ICON = {
@@ -83,7 +84,7 @@ export default function AdminDeletedTasks() {
         <div className="modern-table-container">
           {loading ? (
             <div className="task-empty-state">
-              <div className="route-spinner" style={{ width: 28, height: 28 }} />
+              <LogoLoader size={48} />
               <span className="task-empty-desc">Loading deleted tasks…</span>
             </div>
           ) : tasks.length === 0 ? (

@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import TaskCard from '../TaskCard/TaskCard'
 import Modal from '../Modal/Modal'
 import TaskDetailView from '../TaskDetailView/TaskDetailView'
+import { LogoLoader } from '../Loader/Loader'
 
 export default function ReportedTasks({ refreshSignal }) {
   const [tasks, setTasks] = useState([])
@@ -39,7 +40,7 @@ export default function ReportedTasks({ refreshSignal }) {
 
       {loading ? (
         <div className="task-empty-state">
-          <div className="route-spinner" style={{ width: 28, height: 28 }} />
+          <LogoLoader size={48} />
           <span className="task-empty-desc">Loading tasks you've added…</span>
         </div>
       ) : tasks.length === 0 ? (

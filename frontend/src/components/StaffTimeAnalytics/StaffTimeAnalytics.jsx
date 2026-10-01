@@ -4,6 +4,7 @@ import BarChart from '../charts/BarChart'
 import DatePicker from '../DatePicker/DatePicker'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import { formatDuration, formatMinutes } from '../../utils/format'
+import { LogoLoader } from '../Loader/Loader'
 
 /**
  * Per-staff time-logged breakdown with a date-range filter -- shared by the
@@ -100,7 +101,7 @@ export default function StaffTimeAnalytics() {
 
       {loading && timePerStaff.length === 0 ? (
         <div className="task-empty-state">
-          <div className="route-spinner" style={{ width: 28, height: 28 }} />
+          <LogoLoader size={48} />
           <span className="task-empty-desc">Loading staff time analytics…</span>
         </div>
       ) : (

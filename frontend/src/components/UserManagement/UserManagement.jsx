@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import Modal from '../Modal/Modal'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import ConfirmModal from '../ConfirmModal/ConfirmModal'
+import { LogoLoader } from '../Loader/Loader'
 import './UserManagement.css'
 
 function initialsOf(name) {
@@ -183,7 +184,7 @@ export default function UserManagement() {
       <div className="modern-table-container">
         {loading ? (
           <div className="task-empty-state">
-            <div className="route-spinner" style={{ width: 28, height: 28 }} />
+            <LogoLoader size={48} />
             <span className="task-empty-desc">Loading team directory…</span>
           </div>
         ) : (

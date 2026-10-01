@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '../Modal/Modal'
+import { LogoLoader } from '../Loader/Loader'
 import './StaffPicker.css'
 
 export default function StaffPicker({
@@ -102,7 +103,9 @@ export default function StaffPicker({
           )}
 
           {loading ? (
-            <div className="staff-picker-empty">Loading staff…</div>
+            <div className="staff-picker-empty">
+              <LogoLoader size={32} label="Loading staff…" />
+            </div>
           ) : filtered.length === 0 ? (
             <div className="staff-picker-empty">
               {staff.length === 0 ? 'No staff members yet.' : `No staff match "${search}"`}

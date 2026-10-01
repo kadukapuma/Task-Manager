@@ -8,6 +8,7 @@ import TaskDetailModal from '../../components/TaskDetailModal/TaskDetailModal'
 import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import AutoPauseToggle from '../../components/AutoPauseToggle/AutoPauseToggle'
 import { formatDate, formatDuration, formatStopwatch, priorityClass, statusClass, taskTypeClass } from '../../utils/format'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './StaffHome.css'
 
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
@@ -397,7 +398,7 @@ export default function StaffHome() {
         <div className="modern-table-container">
           {loading ? (
             <div className="task-empty-state">
-              <div className="route-spinner" style={{ width: 28, height: 28 }} />
+              <LogoLoader size={48} />
               <span className="task-empty-desc">Loading tasks…</span>
             </div>
           ) : filtered.length === 0 ? (

@@ -57,15 +57,15 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--shell-bg), var(--primary));
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-  font-weight: 800;
   margin-bottom: 1rem;
   box-shadow: 0 8px 16px rgba(93, 214, 44, 0.3);
+  overflow: hidden;
+}
+
+.login-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .login-title {

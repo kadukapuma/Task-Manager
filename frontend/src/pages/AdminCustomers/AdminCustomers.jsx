@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import CustomerForm from '../../components/CustomerForm/CustomerForm'
 import Modal from '../../components/Modal/Modal'
 import MobileCardList from '../../components/MobileCardList/MobileCardList'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './AdminCustomers.css'
 
 export default function AdminCustomers() {
@@ -112,7 +113,7 @@ export default function AdminCustomers() {
         <div className="modern-table-container">
           {loading ? (
             <div className="task-empty-state">
-              <div className="route-spinner" style={{ width: 28, height: 28 }} />
+              <LogoLoader size={48} />
               <span className="task-empty-desc">Loading customer directory…</span>
             </div>
           ) : filteredCustomers.length === 0 ? (

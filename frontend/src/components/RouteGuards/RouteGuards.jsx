@@ -1,20 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import './RouteGuards.css'
-
-function LoadingScreen() {
-  return (
-    <div className="route-loader-container">
-      <div className="route-spinner" />
-      <p className="route-loader-text">Loading TaskFlow…</p>
-    </div>
-  )
-}
+import { TaskFlowSplash } from '../Loader/Loader'
 
 export function RequireAuth() {
   const { user, loading } = useAuth()
 
-  if (loading) return <LoadingScreen />
+  if (loading) return <TaskFlowSplash />
   if (!user) return <Navigate to="/login" replace />
 
   return <Outlet />
@@ -23,7 +14,7 @@ export function RequireAuth() {
 export function RequireAdmin() {
   const { user, loading } = useAuth()
 
-  if (loading) return <LoadingScreen />
+  if (loading) return <TaskFlowSplash />
   if (!user || user.role !== 'admin') return <Navigate to="/login" replace />
 
   return <Outlet />

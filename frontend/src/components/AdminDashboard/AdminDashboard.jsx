@@ -5,6 +5,7 @@ import StaffPicker from '../StaffPicker/StaffPicker'
 import MobileCardList from '../MobileCardList/MobileCardList'
 import BarChart from '../charts/BarChart'
 import StaffTimeAnalytics from '../StaffTimeAnalytics/StaffTimeAnalytics'
+import { LogoLoader } from '../Loader/Loader'
 import './AdminDashboard.css'
 
 const PRIORITY_ICON = {
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
   if (loading && !summary) {
     return (
       <div className="task-empty-state">
-        <div className="route-spinner" />
+        <LogoLoader size={72} />
         <span className="task-empty-desc">Loading analytics dashboard…</span>
       </div>
     )

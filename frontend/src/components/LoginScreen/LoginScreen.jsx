@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import logo from '../../assets/taskflow-logo.png'
 import './LoginScreen.css'
 
 export default function LoginScreen() {
@@ -48,7 +49,7 @@ export default function LoginScreen() {
       <div className="login-card">
         <div className="login-brand">
           <div className="login-logo">
-            <i className="fa-solid fa-diagram-project" aria-hidden="true" />
+            <img src={logo} alt="TaskFlow logo" />
           </div>
           <h1 className="login-title">Welcome to TaskFlow</h1>
           <p className="login-subtitle">Task & Employee Management System</p>

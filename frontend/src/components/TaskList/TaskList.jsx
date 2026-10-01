@@ -3,6 +3,7 @@ import api, { apiErrorMessage } from '../../api/client'
 import TaskCard from '../TaskCard/TaskCard'
 import Modal from '../Modal/Modal'
 import TaskDetailView from '../TaskDetailView/TaskDetailView'
+import { LogoLoader } from '../Loader/Loader'
 import './TaskList.css'
 
 export default function TaskList({ refreshSignal, onChange }) {
@@ -127,7 +128,7 @@ export default function TaskList({ refreshSignal, onChange }) {
 
       {loading ? (
         <div className="task-empty-state">
-          <div className="route-spinner" style={{ width: 28, height: 28 }} />
+          <LogoLoader size={48} />
           <span className="task-empty-desc">Loading your tasks…</span>
         </div>
       ) : tasks.length === 0 ? (

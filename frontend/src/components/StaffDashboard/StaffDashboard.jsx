@@ -4,6 +4,7 @@ import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClas
 import MobileCardList from '../MobileCardList/MobileCardList'
 import BarChart from '../charts/BarChart'
 import DatePicker from '../DatePicker/DatePicker'
+import { LogoLoader } from '../Loader/Loader'
 import './StaffDashboard.css'
 
 function shortDayLabel(dateStr) {
@@ -80,7 +81,7 @@ export default function StaffDashboard() {
   if (loading && !summary) {
     return (
       <div className="task-empty-state">
-        <div className="route-spinner" />
+        <LogoLoader size={72} />
         <span className="task-empty-desc">Loading your dashboard analytics…</span>
       </div>
     )

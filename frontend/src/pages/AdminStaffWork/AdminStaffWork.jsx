@@ -6,6 +6,7 @@ import TaskDetailView from '../../components/TaskDetailView/TaskDetailView'
 import BarChart from '../../components/charts/BarChart'
 import DatePicker from '../../components/DatePicker/DatePicker'
 import { formatDate, formatDuration, formatMinutes, formatVariance, priorityClass, taskTypeClass } from '../../utils/format'
+import { LogoLoader } from '../../components/Loader/Loader'
 import './AdminStaffWork.css'
 
 function toDateStr(date) {
@@ -172,7 +173,7 @@ export default function AdminStaffWork() {
 
       {loading ? (
         <div className="task-empty-state">
-          <div className="route-spinner" style={{ width: 28, height: 28 }} />
+          <LogoLoader size={48} />
           <span className="task-empty-desc">Loading staff performance…</span>
         </div>
       ) : (
