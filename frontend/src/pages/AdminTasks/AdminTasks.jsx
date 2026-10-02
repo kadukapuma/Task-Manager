@@ -18,7 +18,7 @@ const QUICK_STATUS_FILTERS = [
   { label: 'Finished', status: 'Done' },
 ]
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
-const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance']
+const TASK_TYPES = ['New', 'Error', 'Installation', 'Maintenance','Modification']
 const PRIORITY_ICON = {
   Fire: 'fa-fire',
   Urgent: 'fa-bolt',

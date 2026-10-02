@@ -6,7 +6,7 @@ import DatePicker from '../DatePicker/DatePicker'
 import { attachmentIcon, formatFileSize, openAttachment } from '../../utils/attachments'
 import './TaskForm.css'
 
-const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance']
+const TASK_TYPES = ['New', 'Error', 'Installation', 'Maintenance','Modification']
 const PRIORITIES = ['Normal', 'Urgent', 'Fire']
 const STATUSES = ['Pending', 'In Progress', 'Paused', 'Done', 'Undone']
 const FREQUENCIES = ['Daily', 'Weekly', 'Monthly']

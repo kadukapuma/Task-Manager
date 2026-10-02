@@ -12,7 +12,7 @@ class Task extends Model
 {
     use SoftDeletes;
 
-    public const TASK_TYPES = ['Repairing', 'Error', 'Installation', 'Maintenance'];
+    public const TASK_TYPES = ['New', 'Error', 'Installation', 'Maintenance','Modification',];
 
     public const PRIORITIES = ['Normal', 'Urgent', 'Fire'];
 
