@@ -12,7 +12,7 @@ const links = [
   { to: '/admin/deleted-tasks', label: 'Deleted Tasks', icon: 'fa-trash-can' },
   { to: '/admin/customers', label: 'Customers', icon: 'fa-address-book' },
   { to: '/admin/users', label: 'Team & Staff', icon: 'fa-users' },
-  { to: '/admin/change-password', label: 'Security Settings', icon: 'fa-key' },
+  // { to: '/admin/change-password', label: 'Security Settings', icon: 'fa-key' },
 ]
 
 const titleMap = {
