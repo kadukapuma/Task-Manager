@@ -30,4 +30,4 @@ Artisan::command('tasks:auto-pause', function () {
     $this->info("Auto-paused {$logs->count()} task(s).");
 })->purpose('Pause running tasks that reached their auto-pause time');
 
-Schedule::command('tasks:auto-pause')->everyMinute()->withoutOverlapping();
+Schedule::command('tasks:auto-pause')->everyMinute()->withoutOverlapping(5);
